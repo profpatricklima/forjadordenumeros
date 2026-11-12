@@ -420,8 +420,8 @@
             <h3>Como Jogar:</h3>
             <ul>
                 <li><strong>A Regra de Ouro:</strong> Você começa com <strong>8 cartas</strong>. O objetivo é combiná-las na forja até sobrar <strong>apenas uma única carta</strong> no seu deck.</li>
-                <li><strong>A Meta Exata:</strong> Essa última carta restante precisa ser exatamente o <strong>Número Alvo</strong>! Se você formar o alvo mas ainda houver outras cartas na mesa, o jogo continua.</li>
-                <li><strong>Reabastecimento Automático:</strong> Se sobrar apenas 1 carta e ela não for o alvo (ou se você ficar preso), a forja se reabastece automaticamente para você tentar de novo.</li>
+                <li><strong>A Meta Exata:</strong> Essa última carta restante precisa ser exatamente o <strong>Número Alvo</strong> inicial! Se você formar o alvo mas ainda houver outras cartas na mesa, o jogo continua.</li>
+                <li><strong>Reabastecimento Inteligente:</strong> Se sobrar apenas 1 carta e ela <strong>não</strong> for o alvo, a mesma carta que você forjou é mantida na mesa junto com a mesma Meta Inicial, e a forja adiciona automaticamente 5 novas cartas para você continuar com o mesmo tempo restante.</li>
             </ul>
         </div>
 
@@ -569,7 +569,7 @@
     let selected1 = null; 
     let selected2 = null; 
     let selectedOp = null;
-    let winningCardValue = null;
+    let gameActive = false;
 
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -611,30 +611,31 @@
         document.getElementById('score').innerText = score;
         document.getElementById('timer').innerText = timeLeft;
 
-        startNewRound(null);
+        startNewRound(true); // true para gerar novo alvo e 8 cartas do zero
 
+        gameActive = true;
         clearInterval(timerInterval);
         timerInterval = setInterval(() => {
+            if (!gameActive) return; // Se o jogo travou (vitória), o cronômetro não corre!
+            
             timeLeft--;
             document.getElementById('timer').innerText = timeLeft;
             if (timeLeft <= 0) {
+                gameActive = false;
                 clearInterval(timerInterval);
                 gameOver();
             }
         }, 1000);
     }
 
-    function startNewRound(keepCard = null) {
-        target = Math.floor(Math.random() * 50) + 10;
+    function startNewRound(brandNewTarget = true) {
+        if (brandNewTarget) {
+            target = Math.floor(Math.random() * 50) + 10;
+        }
         document.getElementById('targetNum').innerText = target;
 
-        hand = [];
-        if (keepCard !== null) {
-            hand.push(keepCard); // Guarda a carta vencedora (1 carta)
-            for (let i = 0; i < 7; i++) { // + 7 novas cartas = 8 cartas no total
-                hand.push(Math.floor(Math.random() * 9) + 1);
-            }
-        } else {
+        if (brandNewTarget) {
+            hand = [];
             for (let i = 0; i < 8; i++) { // Deck inicial de 8 cartas
                 hand.push(Math.floor(Math.random() * 9) + 1);
             }
@@ -666,6 +667,7 @@
     }
 
     function selectCard(index) {
+        if (!gameActive) return;
         playSound('click');
         if (selected1 === index) {
             selected1 = null;
@@ -684,6 +686,7 @@
     }
 
     function selectOp(op) {
+        if (!gameActive) return;
         playSound('click');
         selectedOp = op;
         document.querySelectorAll('.op-btn').forEach(btn => {
@@ -699,6 +702,7 @@
     }
 
     function combineCards() {
+        if (!gameActive) return;
         const msg = document.getElementById('gameMsg');
         if (selected1 === null || selected2 === null || selectedOp === null) {
             playSound('click');
@@ -753,23 +757,27 @@
         // VALIDAÇÃO RIGOROSA DA VITÓRIA: Só vence se restou APENAS 1 carta na mão E essa carta for o alvo exato!
         if (hand.length === 1) {
             if (hand[0] === target) {
+                gameActive = false; // TRAVA O CRONOMETRO IMEDIATAMENTE NA VITÓRIA
                 playSound('victory');
-                winningCardValue = hand[0]; // Salva a carta campeã para a próxima rodada
                 document.getElementById('victory-modal').style.display = 'flex';
                 return;
             } else {
-                // Sobrou 1 carta, mas NÃO é o alvo. A forja reabastece automaticamente.
+                // Sobrou 1 carta, mas NÃO é o alvo. A meta inicial e a última carta forjada são mantidas, e acrescenta 5 novas cartas!
                 playSound('resupply');
                 msg.style.color = 'var(--danger)';
-                msg.innerText = "❌ Sobrou carta incorreta! A forja se reabastece com novas cartas!";
+                msg.innerText = "❌ Sobrou carta incorreta! Mantendo a última carta e a meta, adicionando 5 novas!";
                 setTimeout(() => {
-                    startNewRound(null);
+                    for (let i = 0; i < 5; i++) {
+                        hand.push(Math.floor(Math.random() * 9) + 1);
+                    }
+                    renderHand();
+                    msg.innerText = "";
                 }, 1500);
                 return;
             }
         }
 
-        // Se ainda tem mais de 1 carta na mão, mesmo que o resultado atual seja igual ao alvo, o jogo NÃO acaba.
+        // Se ainda tem mais de 1 carta na mão
         if (result === target) {
             msg.style.color = 'var(--primary)';
             msg.innerText = "⚠️ Você formou o Alvo, mas ainda há cartas na mesa! Elimine todas até sobrar apenas uma.";
@@ -785,10 +793,11 @@
         document.getElementById('score').innerText = score;
         document.getElementById('victory-modal').style.display = 'none';
 
-        timeLeft = maxTime;
+        timeLeft = maxTime; // Restaura o tempo cheio
         document.getElementById('timer').innerText = timeLeft;
 
-        startNewRound(winningCardValue); // Passa a carta vencedora para a próxima rodada (+ 7 novas)
+        startNewRound(true); // Gera novo alvo e 8 cartas novas
+        gameActive = true; // Retoma o cronômetro
     }
 
     function gameOver() {
