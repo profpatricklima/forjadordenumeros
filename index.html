@@ -419,10 +419,9 @@
         <div class="instructions-box">
             <h3>Como Jogar:</h3>
             <ul>
-                <li><strong>O Objetivo:</strong> Alcance o Número Alvo combinando suas cartas numéricas.</li>
-                <li><strong>O Forjador:</strong> Selecione duas cartas e uma operação (+, -, ×, ÷) para fundi-las em um número novo.</li>
-                <li><strong>Vitória Automática:</strong> Assim que você forjar o Número Alvo exato, avança automaticamente para o próximo desafio!</li>
-                <li><strong>Reabastecimento Automático:</strong> Se o deck esgotar as combinações viáveis ou sobrar apenas uma carta sem atingir o alvo, 5 novas cartas surgem instantaneamente para manter o jogo rolando.</li>
+                <li><strong>O Desafio Final:</strong> Elimine as cartas combinando-os na forja até sobrar <strong>apenas uma única carta</strong> na mão.</li>
+                <li><strong>A Meta Exata:</strong> Essa última carta restante deve ser exatamente igual ao <strong>Número Alvo</strong>! Não podem restar cartas sobrando.</li>
+                <li><strong>Reabastecimento Automático:</strong> Se sobrar apenas 1 carta e ela não for o alvo (ou se você ficar sem jogadas exatas), novas cartas surgem para você refazer a estratégia sem perder tempo.</li>
             </ul>
         </div>
 
@@ -494,7 +493,7 @@
 <div id="victory-modal">
     <div class="victory-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 2rem;">🔥 Alvo Forjado! 🔥</h2>
-        <p style="font-size: 1.1rem; color: #cbd5e1;">Você acertou o número exato com sucesso!</p>
+        <p style="font-size: 1.1rem; color: #cbd5e1;">Você eliminou todas as cartas e a última sobrou exata na meta!</p>
         <button class="action-btn" onclick="nextRound()" style="width: 100%; margin-top: 15px;">Próximo Alvo ➔</button>
     </div>
 </div>
@@ -541,7 +540,6 @@
             osc.start(now);
             osc.stop(now + 0.05);
         } else if (type === 'forge') {
-            // Som metálico de bigorna / fusão
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(220, now);
             osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
@@ -551,9 +549,9 @@
             osc.stop(now + 0.2);
         } else if (type === 'victory') {
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(523.25, now); // C5
-            osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
-            osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+            osc.frequency.setValueAtTime(523.25, now); 
+            osc.frequency.setValueAtTime(659.25, now + 0.1); 
+            osc.frequency.setValueAtTime(783.99, now + 0.2); 
             gain.gain.setValueAtTime(0.15, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
             osc.start(now);
@@ -637,18 +635,18 @@
     }
 
     function startNewRound(keepCard = null) {
-        target = Math.floor(Math.random() * 90) + 10;
+        target = Math.floor(Math.random() * 50) + 10; // Alvo balanceado para fechar com as cartas
         document.getElementById('targetNum').innerText = target;
 
         hand = [];
         if (keepCard !== null) {
             hand.push(keepCard);
-            for (let i = 0; i < 8; i++) {
-                hand.push(Math.floor(Math.random() * 10) + 1);
+            for (let i = 0; i < 4; i++) {
+                hand.push(Math.floor(Math.random() * 9) + 1);
             }
         } else {
-            for (let i = 0; i < 9; i++) {
-                hand.push(Math.floor(Math.random() * 10) + 1);
+            for (let i = 0; i < 5; i++) { // 5 cartas iniciais para tornar a redução limpa e desafiadora
+                hand.push(Math.floor(Math.random() * 9) + 1);
             }
         }
 
@@ -762,30 +760,27 @@
         renderHand(newIndex);
         updateSlots();
 
-        // Verificação Automática de Vitória
-        if (result === target) {
-            playSound('victory');
-            winningCardValue = result;
-            document.getElementById('victory-modal').style.display = 'flex';
-            return;
+        // REQUISITO RIGOROSO: Só vence se hand.length === 1 E o único número for o alvo exato!
+        if (hand.length === 1) {
+            if (hand[0] === target) {
+                playSound('victory');
+                winningCardValue = hand[0];
+                document.getElementById('victory-modal').style.display = 'flex';
+                return;
+            } else {
+                // Sobrou apenas 1 carta, mas NÃO é o alvo! Acabou as cartas úteis, reabastece automaticamente.
+                playSound('resupply');
+                msg.style.color = 'var(--danger)';
+                msg.innerText = "❌ Sobrou carta errada! A forja se reabastece com novas cartas!";
+                setTimeout(() => {
+                    startNewRound(null);
+                }, 1500);
+                return;
+            }
         }
 
-        // Verificação de Emergência: se restou apenas 1 carta e ela NÃO é o alvo
-        if (hand.length === 1) {
-            playSound('resupply');
-            msg.style.color = 'var(--primary)';
-            msg.innerText = "⚡ Forja esvaziada! 5 novas cartas adicionadas automaticamente!";
-            setTimeout(() => {
-                for (let i = 0; i < 5; i++) {
-                    hand.push(Math.floor(Math.random() * 10) + 1);
-                }
-                renderHand();
-                msg.innerText = "";
-            }, 1200);
-        } else {
-            msg.style.color = 'var(--primary)';
-            msg.innerText = `⚡ Forjado com sucesso! Novo valor: ${result}`;
-        }
+        msg.style.color = 'var(--primary)';
+        msg.innerText = `⚡ Forjado com sucesso! Novo valor: ${result}`;
     }
 
     function nextRound() {
@@ -797,7 +792,7 @@
         timeLeft = maxTime;
         document.getElementById('timer').innerText = timeLeft;
 
-        startNewRound(winningCardValue);
+        startNewRound(null); // Começa novo desafio limpo com 5 cartas novas
     }
 
     function gameOver() {
