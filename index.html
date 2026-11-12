@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matemática Uno - O Alvo</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --accent: #22c55e;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+        }
+
+        .target-box {
+            text-align: center;
+            background: var(--card-bg);
+            padding: 12px 25px;
+            border-radius: 12px;
+            border: 2px solid var(--primary);
+        }
+
+        .target-number {
+            font-size: 2.3rem;
+            font-weight: bold;
+            color: #818cf8;
+        }
+
+        .stats {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 1.1rem;
+            text-align: right;
+        }
+
+        .game-board {
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .slot-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            min-height: 85px;
+        }
+
+        .slot {
+            width: 55px;
+            height: 80px;
+            border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.5);
+            background: rgba(0,0,0,0.2);
+        }
+
+        .op-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .op-btn {
+            background: #334155;
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .op-btn.selected, .op-btn:hover {
+            background: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .hand-container {
+            margin-top: 25px;
+        }
+
+        .cards-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .card {
+            width: 55px;
+            height: 80px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            user-select: none;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
+
+        .card.selected {
+            border: 3px solid #fbbf24;
+            transform: translateY(-8px);
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        button.action-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button.action-btn:hover {
+            background: #16a34a;
+        }
+
+        button.secondary-btn {
+            background: #475569;
+        }
+        button.secondary-btn:hover {
+            background: #334155;
+        }
+
+        .message {
+            margin-top: 12px;
+            text-align: center;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        /* Tela de Game Over */
+        #gameover-screen {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        #gameover-screen h2 {
+            color: var(--danger);
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="game-container">
+    <header>
+        <div class="target-box">
+            <div style="font-size: 0.85rem; color: #94a3b8;">NÚMERO ALVO</div>
+            <div class="target-number" id="targetNum">--</div>
+        </div>
+        <div class="stats">
+            <div>⏱️ Tempo: <span id="timer">75</span>s</div>
+            <div>🏆 Alvos Concluídos: <span id="score">0</span></div>
+        </div>
+    </header>
+
+    <div class="game-board">
+        <p style="color: #94a3b8; font-size: 0.95rem;">Selecione 2 cartas e uma operação para gerar um novo número:</p>
+        
+        <div class="slot-area">
+            <div class="slot" id="slot1">Carta 1</div>
+            <div class="slot" id="slotOp">Op</div>
+            <div class="slot" id="slot2">Carta 2</div>
+        </div>
+
+        <div class="op-selector">
+            <button class="op-btn" onclick="selectOp('+')">+</button>
+            <button class="op-btn" onclick="selectOp('-')">-</button>
+            <button class="op-btn" onclick="selectOp('×')">×</button>
+            <button class="op-btn" onclick="selectOp('÷')">÷</button>
+        </div>
+
+        <div class="message" id="gameMsg"></div>
+
+        <div class="actions">
+            <button class="action-btn" onclick="combineCards()">Combinar Cartas</button>
+            <button class="action-btn secondary-btn" onclick="checkVictory()">Bater (Concluir Alvo)</button>
+        </div>
+    </div>
+
+    <div class="hand-container">
+        <h3 style="text-align: center; font-size: 1.05rem; color: #94a3b8;">Sua Mão de Cartas</h3>
+        <div class="cards-grid" id="cardsGrid"></div>
+    </div>
+</div>
+
+<!-- Tela de Fim de Jogo -->
+<div class="container" id="gameover-screen">
+    <h2>Fim do Tempo!</h2>
+    <p style="font-size: 1.2rem; color: #cbd5e1;">Você completou com sucesso:</p>
+    <div style="font-size: 3.5rem; font-weight: bold; color: var(--accent); margin: 15px 0;" id="finalScore">0</div>
+    <p style="color: #94a3b8;">alvos matemáticos nesta partida.</p>
+    <button class="action-btn" onclick="restartMarathon()" style="margin-top: 20px;">Jogar Novamente</button>
+</div>
+
+<script>
+    let target = 0;
+    let hand = [];
+    let timeLeft = 75;
+    let timerInterval = null;
+    let score = 0;
+
+    let selected1 = null; 
+    let selected2 = null; 
+    let selectedOp = null;
+
+    function startNewRound(keepCard = null) {
+        // Gera novo alvo entre 10 e 99
+        target = Math.floor(Math.random() * 90) + 10;
+        document.getElementById('targetNum').innerText = target;
+
+        hand = [];
+        
+        // Se o jogador bateu a fase anterior, mantém a carta vencedora
+        if (keepCard !== null) {
+            hand.push(keepCard);
+            // Completa com mais 8 cartas novas (totalizando 9 cartas na mão)
+            for (let i = 0; i < 8; i++) {
+                hand.push(Math.floor(Math.random() * 10) + 1);
+            }
+        } else {
+            // Início de jogo: 9 cartas iniciais
+            for (let i = 0; i < 9; i++) {
+                hand.push(Math.floor(Math.random() * 10) + 1);
+            }
+        }
+
+        selected1 = null;
+        selected2 = null;
+        selectedOp = null;
+        document.querySelectorAll('.op-btn').forEach(btn => btn.classList.remove('selected'));
+        document.getElementById('gameMsg').innerText = "";
+
+        renderHand();
+        updateSlots();
+    }
+
+    function startMarathon() {
+        score = 0;
+        timeLeft = 75;
+        document.getElementById('score').innerText = score;
+        document.getElementById('timer').innerText = timeLeft;
+        
+        document.getElementById('game-container').style.display = 'block';
+        document.getElementById('gameover-screen').style.display = 'none';
+
+        startNewRound(null);
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                gameOver();
+            }
+        }, 1000);
+    }
+
+    function gameOver() {
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('gameover-screen').style.display = 'block';
+        document.getElementById('finalScore').innerText = score;
+    }
+
+    function restartMarathon() {
+        startMarathon();
+    }
+
+    function renderHand() {
+        const grid = document.getElementById('cardsGrid');
+        grid.innerHTML = '';
+        hand.forEach((num, index) => {
+            const card = document.createElement('div');
+            card.className = `card ${selected1 === index || selected2 === index ? 'selected' : ''}`;
+            card.innerText = num;
+            card.onclick = () => selectCard(index);
+            grid.appendChild(card);
+        });
+    }
+
+    function selectCard(index) {
+        if (selected1 === index) {
+            selected1 = null;
+        } else if (selected2 === index) {
+            selected2 = null;
+        } else if (selected1 === null) {
+            selected1 = index;
+        } else if (selected2 === null) {
+            selected2 = index;
+        } else {
+            selected1 = index;
+            selected2 = null;
+        }
+        renderHand();
+        updateSlots();
+    }
+
+    function selectOp(op) {
+        selectedOp = op;
+        document.querySelectorAll('.op-btn').forEach(btn => {
+            btn.classList.toggle('selected', btn.innerText === op);
+        });
+        updateSlots();
+    }
+
+    function updateSlots() {
+        document.getElementById('slot1').innerText = selected1 !== null ? hand[selected1] : 'Carta 1';
+        document.getElementById('slotOp').innerText = selectedOp !== null ? selectedOp : 'Op';
+        document.getElementById('slot2').innerText = selected2 !== null ? hand[selected2] : 'Carta 2';
+    }
+
+    function combineCards() {
+        const msg = document.getElementById('gameMsg');
+        if (selected1 === null || selected2 === null || selectedOp === null) {
+            msg.style.color = 'var(--danger)';
+            msg.innerText = "Selecione duas cartas e uma operação!";
+            return;
+        }
+
+        const val1 = hand[selected1];
+        const val2 = hand[selected2];
+        let result = 0;
+
+        if (selectedOp === '+') result = val1 + val2;
+        if (selectedOp === '-') result = val1 - val2;
+        if (selectedOp === '×') result = val1 * val2;
+        if (selectedOp === '÷') {
+            if (val2 === 0 || val1 % val2 !== 0) {
+                msg.style.color = 'var(--danger)';
+                msg.innerText = "Divisão inválida (não exata ou por zero)!";
+                return;
+            }
+            result = val1 / val2;
+        }
+
+        if (result < 0) {
+            msg.style.color = 'var(--danger)';
+            msg.innerText = "Resultado negativo não permitido nos naturais!";
+            return;
+        }
+
+        // Remove as duas cartas usadas (removendo primeiro a de maior índice)
+        const firstIdx = Math.max(selected1, selected2);
+        const secondIdx = Math.min(selected1, selected2);
+        
+        hand.splice(firstIdx, 1);
+        hand.splice(secondIdx, 1);
+
+        // Adiciona a nova carta gerada
+        hand.push(result);
+
+        selected1 = null;
+        selected2 = null;
+        selectedOp = null;
+        document.querySelectorAll('.op-btn').forEach(btn => btn.classList.remove('selected'));
+
+        msg.style.color = 'var(--accent)';
+        msg.innerText = `Sucesso! Nova carta gerada: ${result}`;
+
+        renderHand();
+        updateSlots();
+    }
+
+    function checkVictory() {
+        const msg = document.getElementById('gameMsg');
+        // Verifica se o número alvo está presente em alguma carta da mão
+        const matchIndex = hand.indexOf(target);
+
+        if (matchIndex !== -1) {
+            score++;
+            document.getElementById('score').innerText = score;
+            
+            // Guarda a carta vencedora para levar para a próxima fase
+            const winningCard = hand[matchIndex];
+
+            msg.style.color = 'var(--accent)';
+            msg.innerText = "🎉 Alvo alcançado! Próxima fase carregada!";
+
+            // Reseta o cronômetro para 75s e inicia a nova fase mantendo a carta vencedora
+            timeLeft = 75;
+            document.getElementById('timer').innerText = timeLeft;
+
+            setTimeout(() => {
+                startNewRound(winningCard);
+            }, 1200);
+        } else {
+            msg.style.color = 'var(--danger)';
+            msg.innerText = `Nenhuma carta na mão possui o valor exato do alvo (${target}). Continue calculando!`;
+        }
+    }
+
+    // Inicia o jogo ao carregar a página
+    startMarathon();
+</script>
+
+</body>
+</html>
