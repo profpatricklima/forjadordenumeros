@@ -8,12 +8,11 @@
         :root {
             --bg-dark: #090d16;
             --panel-bg: rgba(20, 27, 45, 0.9);
-            --primary: #f97316; /* Cor de brasa / fogo */
+            --primary: #f97316;
             --primary-hover: #ea580c;
             --accent: #22c55e;
             --danger: #ef4444;
             --text: #f8fafc;
-            --card-gradient: linear-gradient(135deg, #334155, #1e293b);
         }
 
         body {
@@ -31,7 +30,33 @@
             position: relative;
         }
 
-        /* Efeito de Fundo / Bragas flutuantes */
+        /* Botão de Som Global */
+        .sound-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid var(--primary);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+
+        .sound-toggle:hover {
+            background: var(--primary);
+            transform: scale(1.08);
+        }
+
+        /* Efeito de Fundo / Faíscas */
         .spark {
             position: absolute;
             background: rgba(249, 115, 22, 0.6);
@@ -59,15 +84,9 @@
             z-index: 10;
         }
 
-        /* Telas */
-        .screen {
-            display: none;
-        }
-        .screen.active {
-            display: block;
-        }
+        .screen { display: none; }
+        .screen.active { display: block; }
 
-        /* Menu Principal & Título */
         .game-title {
             text-align: center;
             font-size: 2.8rem;
@@ -76,13 +95,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
-            text-shadow: 0 0 30px rgba(249, 115, 22, 0.4);
-            animation: pulseGlow 2s infinite alternate;
-        }
-
-        @keyframes pulseGlow {
-            0% { filter: drop-shadow(0 0 2px rgba(249,115,22,0.4)); }
-            100% { filter: drop-shadow(0 0 12px rgba(249,115,22,0.8)); }
+            filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.4));
         }
 
         .game-subtitle {
@@ -115,12 +128,10 @@
 
         .menu-btn:hover {
             background: var(--primary);
-            color: #fff;
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5);
         }
 
-        /* Instruções */
         .instructions-box {
             background: rgba(15, 23, 42, 0.8);
             border-radius: 12px;
@@ -130,27 +141,11 @@
             line-height: 1.6;
         }
 
-        .instructions-box h3 {
-            color: #f97316;
-            margin-top: 0;
-        }
+        .instructions-box h3 { color: #f97316; margin-top: 0; }
+        .instructions-box ul { padding-left: 20px; margin-bottom: 0; color: #cbd5e1; }
+        .instructions-box li { margin-bottom: 8px; }
 
-        .instructions-box ul {
-            padding-left: 20px;
-            margin-bottom: 0;
-            color: #cbd5e1;
-        }
-
-        .instructions-box li {
-            margin-bottom: 8px;
-        }
-
-        /* Contagem Regressiva */
-        #countdown-screen {
-            text-align: center;
-            padding: 50px 0;
-        }
-
+        #countdown-screen { text-align: center; padding: 50px 0; }
         .countdown-number {
             font-size: 6rem;
             font-weight: 900;
@@ -164,7 +159,6 @@
             100% { transform: scale(1); opacity: 0.8; }
         }
 
-        /* Cabeçalho do Jogo */
         header {
             display: flex;
             justify-content: space-between;
@@ -198,7 +192,6 @@
             text-align: right;
         }
 
-        /* O Forjador de Número (Área de Combinação Estilizada) */
         .forger-board {
             background: linear-gradient(145deg, #111827, #030712);
             border-radius: 16px;
@@ -274,11 +267,7 @@
             box-shadow: 0 0 15px var(--primary);
         }
 
-        /* Cartas Maiores e Bonitas */
-        .hand-container {
-            margin-top: 20px;
-        }
-
+        .hand-container { margin-top: 20px; }
         .cards-grid {
             display: flex;
             flex-wrap: wrap;
@@ -317,18 +306,14 @@
             box-shadow: 0 0 20px #fbbf24;
         }
 
-        /* Animação de Nova Carta Forjada */
         @keyframes forgeFlash {
             0% { transform: scale(0.5); background: #ef4444; filter: brightness(2); }
             50% { transform: scale(1.25); background: #f97316; }
             100% { transform: scale(1); background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
         }
 
-        .card.newly-forged {
-            animation: forgeFlash 0.6s ease-out;
-        }
+        .card.newly-forged { animation: forgeFlash 0.6s ease-out; }
 
-        /* Ações e Botões */
         .actions {
             display: flex;
             gap: 15px;
@@ -354,11 +339,6 @@
             box-shadow: 0 6px 20px rgba(34, 197, 94, 0.6);
         }
 
-        button.secondary-btn {
-            background: linear-gradient(135deg, #475569, #334155);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
         .message {
             margin-top: 15px;
             text-align: center;
@@ -368,19 +348,41 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        /* Tela de Game Over */
-        #gameover-screen {
+        /* Modal de Sucesso Automático de Vitória */
+        #victory-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .victory-content {
+            background: var(--panel-bg);
+            border: 3px solid var(--accent);
+            padding: 30px;
+            border-radius: 20px;
             text-align: center;
-            padding: 20px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.5);
+            animation: popIn 0.3s ease-out;
         }
-        #gameover-screen h2 {
-            color: var(--danger);
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+
+        @keyframes popIn {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
+
+        #gameover-screen { text-align: center; padding: 20px; }
+        #gameover-screen h2 { color: var(--danger); font-size: 2.5rem; margin-bottom: 10px; }
     </style>
 </head>
 <body>
+
+<!-- Botão de Som no Canto Superior -->
+<button class="sound-toggle" id="soundToggleBtn" onclick="toggleSound()" title="Ligar/Desligar Som">🔊</button>
 
 <!-- Faíscas de fundo simulando a Forja -->
 <script>
@@ -418,9 +420,9 @@
             <h3>Como Jogar:</h3>
             <ul>
                 <li><strong>O Objetivo:</strong> Alcance o Número Alvo combinando suas cartas numéricas.</li>
-                <li><strong>O Forjador:</strong> Selecione duas cartas e uma operação (+, -, ×, ÷) para fundi-las em um único número novo.</li>
-                <li><strong>Regras Naturais:</strong> Subtrações não podem resultar em números negativos e divisões precisam ser estritamente exatas!</li>
-                <li><strong>Ritmo de Maratona:</strong> Ao atingir a meta, o cronômetro é recarregado, você guarda sua carta vencedora e ganha 8 novas cartas!</li>
+                <li><strong>O Forjador:</strong> Selecione duas cartas e uma operação (+, -, ×, ÷) para fundi-las em um número novo.</li>
+                <li><strong>Vitória Automática:</strong> Assim que você forjar o Número Alvo exato, avança automaticamente para o próximo desafio!</li>
+                <li><strong>Reabastecimento Automático:</strong> Se o deck esgotar as combinações viáveis ou sobrar apenas uma carta sem atingir o alvo, 5 novas cartas surgem instantaneamente para manter o jogo rolando.</li>
             </ul>
         </div>
 
@@ -468,7 +470,6 @@
 
             <div class="actions">
                 <button class="action-btn" onclick="combineCards()">Forjar Cartas ⚡</button>
-                <button class="action-btn secondary-btn" onclick="checkVictory()">Bater Meta 🎯</button>
             </div>
         </div>
 
@@ -489,7 +490,85 @@
 
 </div>
 
+<!-- MODAL DE VITÓRIA / ALVO ALCANÇADO -->
+<div id="victory-modal">
+    <div class="victory-content">
+        <h2 style="color: var(--accent); margin-top: 0; font-size: 2rem;">🔥 Alvo Forjado! 🔥</h2>
+        <p style="font-size: 1.1rem; color: #cbd5e1;">Você acertou o número exato com sucesso!</p>
+        <button class="action-btn" onclick="nextRound()" style="width: 100%; margin-top: 15px;">Próximo Alvo ➔</button>
+    </div>
+</div>
+
 <script>
+    // Sintetizador de Som Nativo (Web Audio API)
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    function toggleSound() {
+        soundEnabled = !soundEnabled;
+        const btn = document.getElementById('soundToggleBtn');
+        btn.innerText = soundEnabled ? '🔊' : '🔇';
+    }
+
+    function playSound(type) {
+        if (!soundEnabled) return;
+        initAudio();
+        if (!audioCtx) return;
+
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+
+        if (type === 'click') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+            osc.start(now);
+            osc.stop(now + 0.05);
+        } else if (type === 'forge') {
+            // Som metálico de bigorna / fusão
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(220, now);
+            osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+            osc.start(now);
+            osc.stop(now + 0.2);
+        } else if (type === 'victory') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, now); // C5
+            osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+            osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+            osc.start(now);
+            osc.stop(now + 0.4);
+        } else if (type === 'resupply') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.linearRampToValueAtTime(300, now + 0.2);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+            osc.start(now);
+            osc.stop(now + 0.2);
+        }
+    }
+
     let currentLevel = 'medium';
     let maxTime = 120;
     let target = 0;
@@ -501,6 +580,7 @@
     let selected1 = null; 
     let selected2 = null; 
     let selectedOp = null;
+    let winningCardValue = null;
 
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -508,6 +588,7 @@
     }
 
     function selectLevel(level) {
+        playSound('click');
         currentLevel = level;
         if (level === 'easy') maxTime = 150;
         if (level === 'medium') maxTime = 120;
@@ -517,6 +598,7 @@
     }
 
     function startCountdown() {
+        playSound('click');
         showScreen('countdown-screen');
         let count = 3;
         document.getElementById('countdownNum').innerText = count;
@@ -596,6 +678,7 @@
     }
 
     function selectCard(index) {
+        playSound('click');
         if (selected1 === index) {
             selected1 = null;
         } else if (selected2 === index) {
@@ -613,6 +696,7 @@
     }
 
     function selectOp(op) {
+        playSound('click');
         selectedOp = op;
         document.querySelectorAll('.op-btn').forEach(btn => {
             btn.classList.toggle('selected', btn.innerText === op);
@@ -629,6 +713,7 @@
     function combineCards() {
         const msg = document.getElementById('gameMsg');
         if (selected1 === null || selected2 === null || selectedOp === null) {
+            playSound('click');
             msg.style.color = 'var(--danger)';
             msg.innerText = "Selecione duas cartas e uma operação na forja!";
             return;
@@ -643,6 +728,7 @@
         if (selectedOp === '×') result = val1 * val2;
         if (selectedOp === '÷') {
             if (val2 === 0 || val1 % val2 !== 0) {
+                playSound('click');
                 msg.style.color = 'var(--danger)';
                 msg.innerText = "Divisão inválida (não exata ou por zero)!";
                 return;
@@ -651,10 +737,13 @@
         }
 
         if (result < 0) {
+            playSound('click');
             msg.style.color = 'var(--danger)';
             msg.innerText = "Resultado negativo proibido nos naturais!";
             return;
         }
+
+        playSound('forge');
 
         const firstIdx = Math.max(selected1, selected2);
         const secondIdx = Math.min(selected1, selected2);
@@ -670,44 +759,55 @@
         selectedOp = null;
         document.querySelectorAll('.op-btn').forEach(btn => btn.classList.remove('selected'));
 
-        msg.style.color = 'var(--primary)';
-        msg.innerText = `⚡ Forjado com sucesso! Novo valor: ${result}`;
-
         renderHand(newIndex);
         updateSlots();
-    }
 
-    function checkVictory() {
-        const msg = document.getElementById('gameMsg');
-        const matchIndex = hand.indexOf(target);
+        // Verificação Automática de Vitória
+        if (result === target) {
+            playSound('victory');
+            winningCardValue = result;
+            document.getElementById('victory-modal').style.display = 'flex';
+            return;
+        }
 
-        if (matchIndex !== -1) {
-            score++;
-            document.getElementById('score').innerText = score;
-            
-            const winningCard = hand[matchIndex];
-
-            msg.style.color = 'var(--accent)';
-            msg.innerText = "🔥 Alvo alcançado na forja! Próxima fase!";
-
-            timeLeft = maxTime;
-            document.getElementById('timer').innerText = timeLeft;
-
+        // Verificação de Emergência: se restou apenas 1 carta e ela NÃO é o alvo
+        if (hand.length === 1) {
+            playSound('resupply');
+            msg.style.color = 'var(--primary)';
+            msg.innerText = "⚡ Forja esvaziada! 5 novas cartas adicionadas automaticamente!";
             setTimeout(() => {
-                startNewRound(winningCard);
-            }, 1300);
+                for (let i = 0; i < 5; i++) {
+                    hand.push(Math.floor(Math.random() * 10) + 1);
+                }
+                renderHand();
+                msg.innerText = "";
+            }, 1200);
         } else {
-            msg.style.color = 'var(--danger)';
-            msg.innerText = `Nenhuma carta na mão possui o valor exato do alvo (${target}).`;
+            msg.style.color = 'var(--primary)';
+            msg.innerText = `⚡ Forjado com sucesso! Novo valor: ${result}`;
         }
     }
 
+    function nextRound() {
+        playSound('click');
+        score++;
+        document.getElementById('score').innerText = score;
+        document.getElementById('victory-modal').style.display = 'none';
+
+        timeLeft = maxTime;
+        document.getElementById('timer').innerText = timeLeft;
+
+        startNewRound(winningCardValue);
+    }
+
     function gameOver() {
+        playSound('click');
         showScreen('gameover-screen');
         document.getElementById('finalScore').innerText = score;
     }
 
     function goToMenu() {
+        playSound('click');
         showScreen('menu-screen');
     }
 </script>
