@@ -348,7 +348,7 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        /* Modal de Sucesso Automático de Vitória (Garantido no Topo) */
+        /* Modal de Vitória */
         #victory-modal {
             display: none;
             position: fixed;
@@ -384,7 +384,7 @@
 <!-- Botão de Som no Canto Superior -->
 <button class="sound-toggle" id="soundToggleBtn" onclick="toggleSound()" title="Ligar/Desligar Som">🔊</button>
 
-<!-- Faíscas de fundo simulando a Forja -->
+<!-- Faíscas de fundo -->
 <script>
     for(let i=0; i<15; i++) {
         const spark = document.createElement('div');
@@ -419,9 +419,9 @@
         <div class="instructions-box">
             <h3>Como Jogar:</h3>
             <ul>
-                <li><strong>O Objetivo:</strong> Forje o <strong>Número Alvo</strong> combinando as cartas na forja.</li>
-                <li><strong>Vitória Instantânea:</strong> Assim que a carta resultante for igual ao alvo, você vence a rodada na hora!</li>
-                <li><strong>Reabastecimento:</strong> Se sobrar apenas 1 carta e ela não for o alvo, a forja se reabastece automaticamente com novas cartas para você continuar.</li>
+                <li><strong>A Regra de Ouro:</strong> Você começa com <strong>8 cartas</strong>. O objetivo é combiná-las na forja até sobrar <strong>apenas uma única carta</strong> no seu deck.</li>
+                <li><strong>A Meta Exata:</strong> Essa última carta restante precisa ser exatamente o <strong>Número Alvo</strong>! Se você formar o alvo mas ainda houver outras cartas na mesa, o jogo continua.</li>
+                <li><strong>Reabastecimento Automático:</strong> Se sobrar apenas 1 carta e ela não for o alvo (ou se você ficar preso), a forja se reabastece automaticamente para você tentar de novo.</li>
             </ul>
         </div>
 
@@ -489,17 +489,16 @@
 
 </div>
 
-<!-- MODAL DE VITÓRIA / ALVO ALCANÇADO -->
+<!-- MODAL DE VITÓRIA -->
 <div id="victory-modal">
     <div class="victory-content">
         <h2 style="color: var(--accent); margin-top: 0; font-size: 2rem;">🔥 Alvo Forjado! 🔥</h2>
-        <p style="font-size: 1.1rem; color: #cbd5e1;">Você acertou o Número Alvo com sucesso!</p>
+        <p style="font-size: 1.1rem; color: #cbd5e1;">Você eliminou todas as cartas e a última sobrou exata na meta!</p>
         <button class="action-btn" onclick="nextRound()" style="width: 100%; margin-top: 20px; font-size: 1.2rem; padding: 15px;">Próximo Alvo ➔</button>
     </div>
 </div>
 
 <script>
-    // Sintetizador de Som Nativo (Web Audio API)
     let soundEnabled = true;
     let audioCtx = null;
 
@@ -519,16 +518,12 @@
         if (!soundEnabled) return;
         initAudio();
         if (!audioCtx) return;
-
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
+        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
 
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-
         const now = audioCtx.currentTime;
 
         if (type === 'click') {
@@ -537,16 +532,14 @@
             osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
             gain.gain.setValueAtTime(0.1, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
-            osc.start(now);
-            osc.stop(now + 0.05);
+            osc.start(now); osc.stop(now + 0.05);
         } else if (type === 'forge') {
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(220, now);
             osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
             gain.gain.setValueAtTime(0.2, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-            osc.start(now);
-            osc.stop(now + 0.2);
+            osc.start(now); osc.stop(now + 0.2);
         } else if (type === 'victory') {
             osc.type = 'sine';
             osc.frequency.setValueAtTime(523.25, now); 
@@ -554,16 +547,14 @@
             osc.frequency.setValueAtTime(783.99, now + 0.2); 
             gain.gain.setValueAtTime(0.15, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
-            osc.start(now);
-            osc.stop(now + 0.4);
+            osc.start(now); osc.stop(now + 0.4);
         } else if (type === 'resupply') {
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(150, now);
             osc.frequency.linearRampToValueAtTime(300, now + 0.2);
             gain.gain.setValueAtTime(0.1, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-            osc.start(now);
-            osc.stop(now + 0.2);
+            osc.start(now); osc.stop(now + 0.2);
         }
     }
 
@@ -578,6 +569,7 @@
     let selected1 = null; 
     let selected2 = null; 
     let selectedOp = null;
+    let winningCardValue = null;
 
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -590,7 +582,6 @@
         if (level === 'easy') maxTime = 150;
         if (level === 'medium') maxTime = 120;
         if (level === 'hard') maxTime = 90;
-
         showScreen('instructions-screen');
     }
 
@@ -620,7 +611,7 @@
         document.getElementById('score').innerText = score;
         document.getElementById('timer').innerText = timeLeft;
 
-        startNewRound();
+        startNewRound(null);
 
         clearInterval(timerInterval);
         timerInterval = setInterval(() => {
@@ -633,13 +624,20 @@
         }, 1000);
     }
 
-    function startNewRound() {
+    function startNewRound(keepCard = null) {
         target = Math.floor(Math.random() * 50) + 10;
         document.getElementById('targetNum').innerText = target;
 
         hand = [];
-        for (let i = 0; i < 5; i++) {
-            hand.push(Math.floor(Math.random() * 9) + 1);
+        if (keepCard !== null) {
+            hand.push(keepCard); // Guarda a carta vencedora (1 carta)
+            for (let i = 0; i < 7; i++) { // + 7 novas cartas = 8 cartas no total
+                hand.push(Math.floor(Math.random() * 9) + 1);
+            }
+        } else {
+            for (let i = 0; i < 8; i++) { // Deck inicial de 8 cartas
+                hand.push(Math.floor(Math.random() * 9) + 1);
+            }
         }
 
         selected1 = null;
@@ -752,26 +750,33 @@
         renderHand(newIndex);
         updateSlots();
 
-        // CONDIÇÃO 1: ACERTOU O ALVO NA FORJA (Independente de ter cartas sobrando ou não!)
-        if (result === target) {
-            playSound('victory');
-            document.getElementById('victory-modal').style.display = 'flex';
-            return;
-        }
-
-        // CONDIÇÃO 2: Se restou apenas 1 carta e ela NÃO é o alvo, reabastece automaticamente
+        // VALIDAÇÃO RIGOROSA DA VITÓRIA: Só vence se restou APENAS 1 carta na mão E essa carta for o alvo exato!
         if (hand.length === 1) {
-            playSound('resupply');
-            msg.style.color = 'var(--danger)';
-            msg.innerText = "❌ Sobrou carta errada! A forja se reabastece com novas cartas!";
-            setTimeout(() => {
-                startNewRound();
-            }, 1500);
-            return;
+            if (hand[0] === target) {
+                playSound('victory');
+                winningCardValue = hand[0]; // Salva a carta campeã para a próxima rodada
+                document.getElementById('victory-modal').style.display = 'flex';
+                return;
+            } else {
+                // Sobrou 1 carta, mas NÃO é o alvo. A forja reabastece automaticamente.
+                playSound('resupply');
+                msg.style.color = 'var(--danger)';
+                msg.innerText = "❌ Sobrou carta incorreta! A forja se reabastece com novas cartas!";
+                setTimeout(() => {
+                    startNewRound(null);
+                }, 1500);
+                return;
+            }
         }
 
-        msg.style.color = 'var(--primary)';
-        msg.innerText = `⚡ Forjado com sucesso! Novo valor: ${result}`;
+        // Se ainda tem mais de 1 carta na mão, mesmo que o resultado atual seja igual ao alvo, o jogo NÃO acaba.
+        if (result === target) {
+            msg.style.color = 'var(--primary)';
+            msg.innerText = "⚠️ Você formou o Alvo, mas ainda há cartas na mesa! Elimine todas até sobrar apenas uma.";
+        } else {
+            msg.style.color = 'var(--primary)';
+            msg.innerText = `⚡ Forjado com sucesso! Novo valor: ${result}`;
+        }
     }
 
     function nextRound() {
@@ -783,7 +788,7 @@
         timeLeft = maxTime;
         document.getElementById('timer').innerText = timeLeft;
 
-        startNewRound();
+        startNewRound(winningCardValue); // Passa a carta vencedora para a próxima rodada (+ 7 novas)
     }
 
     function gameOver() {
