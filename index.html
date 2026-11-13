@@ -30,30 +30,43 @@
             position: relative;
         }
 
-        /* Botão de Som Global */
-        .sound-toggle {
+        /* Botão de Som Global e Menu Superior */
+        .top-controls {
             position: absolute;
             top: 20px;
             right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .top-btn {
             background: rgba(30, 41, 59, 0.8);
             border: 2px solid var(--primary);
             color: white;
-            width: 45px;
+            padding: 0 15px;
             height: 45px;
-            border-radius: 50%;
+            border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 0.95rem;
+            font-weight: bold;
             cursor: pointer;
-            z-index: 100;
             transition: all 0.2s;
             box-shadow: 0 4px 10px rgba(0,0,0,0.4);
         }
 
-        .sound-toggle:hover {
+        .top-btn:hover {
             background: var(--primary);
-            transform: scale(1.08);
+            transform: scale(1.05);
+        }
+
+        .sound-toggle {
+            width: 45px;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 1.2rem;
         }
 
         /* Efeito de Fundo / Faíscas */
@@ -145,6 +158,12 @@
         .instructions-box ul { padding-left: 20px; margin-bottom: 0; color: #cbd5e1; }
         .instructions-box li { margin-bottom: 8px; }
 
+        .instruction-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
         #countdown-screen { text-align: center; padding: 50px 0; }
         .countdown-number {
             font-size: 6rem;
@@ -187,9 +206,16 @@
         .stats {
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            font-size: 1.1rem;
+            gap: 3px;
+            font-size: 1.05rem;
             text-align: right;
+        }
+
+        .phase-display {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
         }
 
         .forger-board {
@@ -228,7 +254,6 @@
             min-height: 115px;
         }
 
-        /* Slots estilizados */
         .slot-card {
             width: 75px;
             height: 105px;
@@ -318,7 +343,6 @@
             margin-top: 15px;
         }
 
-        /* Estilos de Cartas por Fases */
         .card {
             width: 75px;
             height: 105px;
@@ -459,7 +483,7 @@
             padding: 35px;
             border-radius: 20px;
             text-align: center;
-            max-width: 400px;
+            max-width: 420px;
             width: 90%;
             box-shadow: 0 0 40px rgba(34, 197, 94, 0.6);
             animation: popIn 0.3s ease-out;
@@ -476,8 +500,11 @@
 </head>
 <body>
 
-<!-- Botão de Som Global -->
-<button class="sound-toggle" id="soundToggleBtn" onclick="toggleSound()" title="Ligar/Desligar Som">🔊</button>
+<!-- Controles Globais no Topo (Menu Principal e Som) -->
+<div class="top-controls">
+    <button class="top-btn" id="menuTopBtn" onclick="goToMenu()" style="display: none;">🏠 Menu</button>
+    <button class="top-btn sound-toggle" id="soundToggleBtn" onclick="toggleSound()" title="Ligar/Desligar Som">🔊</button>
+</div>
 
 <!-- Faíscas de fundo -->
 <script>
@@ -516,13 +543,14 @@
             <ul>
                 <li><strong>A Regra de Ouro:</strong> Comece com <strong>8 cartas</strong> e combine-as até sobrar <strong>apenas uma única carta</strong> no deck.</li>
                 <li><strong>A Meta Exata:</strong> Essa última carta restante precisa ser exatamente o <strong>Número Alvo</strong> inicial!</li>
-                <li><strong>Sistema de Pontuação:</strong> Ganhe 100 pontos base por fase + bônus de velocidade proporcional ao tempo que sobrar no cronômetro. Quanto mais rápido, maior a pontuação acumulada!</li>
+                <li><strong>Sistema de Pontuação:</strong> Ganhe 100 pontos base por fase + bônus de velocidade proporcional ao tempo que sobrar no cronômetro.</li>
                 <li><strong>Botão + 5 Cartas na Mesa:</strong> Puxe 5 cartas extras a qualquer momento se precisar de opções, sem alterar o tempo restante.</li>
             </ul>
         </div>
 
-        <div style="text-align: center;">
-            <button class="action-btn" onclick="startCountdown()" style="font-size: 1.3rem; padding: 16px 35px;">Começar Fase 1! 🔥</button>
+        <div class="instruction-actions">
+            <button class="action-btn" onclick="goToMenu()" style="background: linear-gradient(135deg, #475569, #334155); padding: 14px 25px;">⬅️ Voltar</button>
+            <button class="action-btn" onclick="startCountdown()" style="font-size: 1.2rem; padding: 14px 30px;">Começar Fase 1! 🔥</button>
         </div>
     </div>
 
@@ -532,7 +560,7 @@
         <div class="countdown-number" id="countdownNum">3</div>
     </div>
 
-    <!-- TELA 4: O JOGO EM SI -->
+    <!-- TELA 4: O JOGO EM SÍ -->
     <div id="game-screen" class="screen">
         <header>
             <div class="target-box">
@@ -542,6 +570,7 @@
             <div class="stats">
                 <div>⏱️ Tempo: <span id="timer">120</span>s</div>
                 <div>🏆 Pontuação: <span id="score">0</span> pts</div>
+                <div class="phase-display" id="phaseIndicator">Fase 1/12</div>
             </div>
         </header>
 
@@ -665,7 +694,7 @@
     let hand = [];
     let timeLeft = 90;
     let timerInterval = null;
-    let totalScore = 0; // Pontuação acumulada total
+    let totalScore = 0; 
 
     let selected1 = null; 
     let selected2 = null; 
@@ -676,6 +705,14 @@
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(screenId).classList.add('active');
+
+        // Mostra ou esconde o botão de Menu no Topo
+        const menuTopBtn = document.getElementById('menuTopBtn');
+        if (screenId === 'game-screen') {
+            menuTopBtn.style.display = 'flex';
+        } else {
+            menuTopBtn.style.display = 'none';
+        }
     }
 
     function selectDifficulty(diff) {
@@ -722,6 +759,7 @@
         
         document.getElementById('score').innerText = totalScore;
         document.getElementById('timer').innerText = timeLeft;
+        document.getElementById('phaseIndicator').innerText = `Fase ${currentPhase}/12`;
 
         startNewRound(null);
 
@@ -842,15 +880,15 @@
             s1.className = `slot-card ${filledClass}`;
             s1.innerText = hand[selected1];
         } else {
-            s1.className = 'slot-card';
+            s1.className = `slot-card`;
             s1.innerText = '1';
         }
 
         if (selectedOp !== null) {
-            sOp.className = 'slot-card filled-orange';
+            sOp.className = `slot-card filled-orange`;
             sOp.innerText = selectedOp;
         } else {
-            sOp.className = 'slot-card';
+            sOp.className = `slot-card`;
             sOp.innerText = 'Op';
         }
 
@@ -858,7 +896,7 @@
             s2.className = `slot-card ${filledClass}`;
             s2.innerText = hand[selected2];
         } else {
-            s2.className = 'slot-card';
+            s2.className = `slot-card`;
             s2.innerText = '2';
         }
     }
@@ -897,6 +935,14 @@
             return;
         }
 
+        // REGRA DE PROIBIÇÃO DO ZERO A PARTIR DA FASE 5
+        if (currentPhase >= 5 && result === 0) {
+            playSound('click');
+            msg.style.color = 'var(--danger)';
+            msg.innerText = "🚫 O número ZERO está proibido a partir da Fase 5!";
+            return;
+        }
+
         playSound('forge');
 
         const firstIdx = Math.max(selected1, selected2);
@@ -921,7 +967,6 @@
                 gameActive = false; 
                 playSound('victory');
 
-                // Cálculo da Pontuação: 100 pontos base + bônus proporcional ao tempo restante
                 let speedBonus = Math.floor((timeLeft / maxTime) * 100);
                 let phaseScore = 100 + speedBonus;
                 totalScore += phaseScore;
@@ -929,7 +974,14 @@
                 
                 if (currentPhase < 12) {
                     document.getElementById('victoryTitle').innerText = "🔥 Fase Concluída! 🔥";
-                    document.getElementById('victoryMsg').innerText = `Parabéns! Fase ${currentPhase} concluída (+${phaseScore} pts). Vamos para a Fase ${currentPhase + 1}!`;
+                    
+                    // AVISO ESPECIAL AO VENCER A FASE 4 (Informando sobre a proibição do zero na Fase 5)
+                    if (currentPhase === 4) {
+                        document.getElementById('victoryMsg').innerHTML = `Parabéns! Fase 4 concluída (+${phaseScore} pts).<br><br><strong style="color: #ef4444; font-size: 1.25rem;">⚠️ ATENÇÃO: A partir da Fase 5, O NÚMERO ZERO ESTÁ PROIBIDO DE SER FORJADO! O desafio agora é muito mais difícil!</strong>`;
+                    } else {
+                        document.getElementById('victoryMsg').innerText = `Parabéns! Fase ${currentPhase} concluída (+${phaseScore} pts). Vamos para a Fase ${currentPhase + 1}!`;
+                    }
+
                     document.getElementById('victoryBtn').innerText = `Próxima Fase ➔`;
                     gameBeaten = false;
                 } else {
@@ -984,6 +1036,7 @@
 
         calculatePhaseTime();
         document.getElementById('timer').innerText = timeLeft;
+        document.getElementById('phaseIndicator').innerText = `Fase ${currentPhase}/12`;
 
         startNewRound(null); 
         gameActive = true; 
