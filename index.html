@@ -225,20 +225,38 @@
             align-items: center;
             gap: 20px;
             margin: 15px 0;
-            min-height: 110px;
+            min-height: 115px;
         }
 
-        .slot {
+        /* Slots com visual exato de cartas */
+        .slot-card {
             width: 75px;
             height: 105px;
-            border: 2px dashed rgba(249, 115, 22, 0.4);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
-            color: rgba(255,255,255,0.4);
-            background: rgba(0,0,0,0.4);
+            font-size: 1.8rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            user-select: none;
+            border: 2px dashed rgba(255,255,255,0.3);
+            background: rgba(0,0,0,0.3);
+            color: rgba(255,255,255,0.3);
+        }
+
+        .slot-card.filled-blue {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border: 2px solid rgba(255,255,255,0.4);
+            color: #ffffff;
+        }
+
+        .slot-card.filled-orange {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            border: 2px solid #fbbf24;
+            color: #ffffff;
+            font-size: 2rem;
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.5);
         }
 
         .op-selector {
@@ -319,6 +337,7 @@
             gap: 15px;
             justify-content: center;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
 
         button.action-btn {
@@ -337,6 +356,15 @@
         button.action-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(34, 197, 94, 0.6);
+        }
+
+        button.resupply-btn {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+        }
+
+        button.resupply-btn:hover {
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.6);
         }
 
         .message {
@@ -406,9 +434,9 @@
         <p class="game-subtitle">Domine o cálculo mental na forja matemática!</p>
         
         <div class="menu-buttons">
-            <button class="menu-btn" onclick="selectLevel('easy')">Nível Fácil</button>
-            <button class="menu-btn" onclick="selectLevel('medium')">Nível Médio</button>
-            <button class="menu-btn" onclick="selectLevel('hard')">Nível Difícil</button>
+            <button class="menu-btn" onclick="selectLevel('easy')">Nível Fácil (120s)</button>
+            <button class="menu-btn" onclick="selectLevel('medium')">Nível Médio (90s)</button>
+            <button class="menu-btn" onclick="selectLevel('hard')">Nível Difícil (60s)</button>
         </div>
     </div>
 
@@ -421,7 +449,7 @@
             <ul>
                 <li><strong>A Regra de Ouro:</strong> Você começa com <strong>8 cartas</strong>. O objetivo é combiná-las na forja até sobrar <strong>apenas uma única carta</strong> no seu deck.</li>
                 <li><strong>A Meta Exata:</strong> Essa última carta restante precisa ser exatamente o <strong>Número Alvo</strong> inicial! Se você formar o alvo mas ainda houver outras cartas na mesa, o jogo continua.</li>
-                <li><strong>Reabastecimento Inteligente:</strong> Se sobrar apenas 1 carta e ela <strong>não</strong> for o alvo, a mesma carta que você forjou é mantida na mesa junto com a mesma Meta Inicial, e a forja adiciona automaticamente 5 novas cartas para você continuar com o mesmo tempo restante.</li>
+                <li><strong>Botão Reabastecer Forja:</strong> Caso precise de mais opções durante a partida, clique em "Reabastecer Forja" para ganhar 5 cartas extras instantaneamente, sem alterar o tempo restante.</li>
             </ul>
         </div>
 
@@ -453,9 +481,9 @@
             <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 5px;">Selecione 2 cartas e uma operação para forjar um novo valor:</p>
             
             <div class="slot-area">
-                <div class="slot" id="slot1">Carta 1</div>
-                <div class="slot" id="slotOp">Op</div>
-                <div class="slot" id="slot2">Carta 2</div>
+                <div class="slot-card" id="slot1">1</div>
+                <div class="slot-card" id="slotOp">Op</div>
+                <div class="slot-card" id="slot2">2</div>
             </div>
 
             <div class="op-selector">
@@ -469,6 +497,7 @@
 
             <div class="actions">
                 <button class="action-btn" onclick="combineCards()">Forjar Cartas ⚡</button>
+                <button class="action-btn resupply-btn" onclick="manualResupply()">Reabastecer Forja 🔨</button>
             </div>
         </div>
 
@@ -559,10 +588,10 @@
     }
 
     let currentLevel = 'medium';
-    let maxTime = 120;
+    let maxTime = 90;
     let target = 0;
     let hand = [];
-    let timeLeft = 120;
+    let timeLeft = 90;
     let timerInterval = null;
     let score = 0;
 
@@ -579,9 +608,9 @@
     function selectLevel(level) {
         playSound('click');
         currentLevel = level;
-        if (level === 'easy') maxTime = 150;
-        if (level === 'medium') maxTime = 120;
-        if (level === 'hard') maxTime = 90;
+        if (level === 'easy') maxTime = 120;
+        if (level === 'medium') maxTime = 90;
+        if (level === 'hard') maxTime = 60;
         showScreen('instructions-screen');
     }
 
@@ -611,12 +640,12 @@
         document.getElementById('score').innerText = score;
         document.getElementById('timer').innerText = timeLeft;
 
-        startNewRound(true); // true para gerar novo alvo e 8 cartas do zero
+        startNewRound(null); // Inicia nova rodada limpa com 8 cartas
 
         gameActive = true;
         clearInterval(timerInterval);
         timerInterval = setInterval(() => {
-            if (!gameActive) return; // Se o jogo travou (vitória), o cronômetro não corre!
+            if (!gameActive) return; 
             
             timeLeft--;
             document.getElementById('timer').innerText = timeLeft;
@@ -628,14 +657,17 @@
         }, 1000);
     }
 
-    function startNewRound(brandNewTarget = true) {
-        if (brandNewTarget) {
-            target = Math.floor(Math.random() * 50) + 10;
-        }
+    function startNewRound(keepCard = null) {
+        target = Math.floor(Math.random() * 50) + 10;
         document.getElementById('targetNum').innerText = target;
 
-        if (brandNewTarget) {
-            hand = [];
+        hand = [];
+        if (keepCard !== null) {
+            hand.push(keepCard); // Guarda a carta vencedora
+            for (let i = 0; i < 7; i++) { // + 7 novas cartas = 8 cartas no total
+                hand.push(Math.floor(Math.random() * 9) + 1);
+            }
+        } else {
             for (let i = 0; i < 8; i++) { // Deck inicial de 8 cartas
                 hand.push(Math.floor(Math.random() * 9) + 1);
             }
@@ -696,9 +728,33 @@
     }
 
     function updateSlots() {
-        document.getElementById('slot1').innerText = selected1 !== null ? hand[selected1] : 'Carta 1';
-        document.getElementById('slotOp').innerText = selectedOp !== null ? selectedOp : 'Op';
-        document.getElementById('slot2').innerText = selected2 !== null ? hand[selected2] : 'Carta 2';
+        const s1 = document.getElementById('slot1');
+        const sOp = document.getElementById('slotOp');
+        const s2 = document.getElementById('slot2');
+
+        if (selected1 !== null) {
+            s1.className = 'slot-card filled-blue';
+            s1.innerText = hand[selected1];
+        } else {
+            s1.className = 'slot-card';
+            s1.innerText = '1';
+        }
+
+        if (selectedOp !== null) {
+            sOp.className = 'slot-card filled-orange';
+            sOp.innerText = selectedOp;
+        } else {
+            sOp.className = 'slot-card';
+            sOp.innerText = 'Op';
+        }
+
+        if (selected2 !== null) {
+            s2.className = 'slot-card filled-blue';
+            s2.innerText = hand[selected2];
+        } else {
+            s2.className = 'slot-card';
+            s2.innerText = '2';
+        }
     }
 
     function combineCards() {
@@ -757,27 +813,17 @@
         // VALIDAÇÃO RIGOROSA DA VITÓRIA: Só vence se restou APENAS 1 carta na mão E essa carta for o alvo exato!
         if (hand.length === 1) {
             if (hand[0] === target) {
-                gameActive = false; // TRAVA O CRONOMETRO IMEDIATAMENTE NA VITÓRIA
+                gameActive = false; // Trava o cronômetro na vitória
                 playSound('victory');
                 document.getElementById('victory-modal').style.display = 'flex';
                 return;
             } else {
-                // Sobrou 1 carta, mas NÃO é o alvo. A meta inicial e a última carta forjada são mantidas, e acrescenta 5 novas cartas!
-                playSound('resupply');
                 msg.style.color = 'var(--danger)';
-                msg.innerText = "❌ Sobrou carta incorreta! Mantendo a última carta e a meta, adicionando 5 novas!";
-                setTimeout(() => {
-                    for (let i = 0; i < 5; i++) {
-                        hand.push(Math.floor(Math.random() * 9) + 1);
-                    }
-                    renderHand();
-                    msg.innerText = "";
-                }, 1500);
+                msg.innerText = "⚠️ Restou apenas 1 carta incorreta! Use o botão 'Reabastecer Forja' para puxar mais cartas.";
                 return;
             }
         }
 
-        // Se ainda tem mais de 1 carta na mão
         if (result === target) {
             msg.style.color = 'var(--primary)';
             msg.innerText = "⚠️ Você formou o Alvo, mas ainda há cartas na mesa! Elimine todas até sobrar apenas uma.";
@@ -787,16 +833,29 @@
         }
     }
 
+    // Botão Manual de Reabastecimento (Adiciona 5 cartas quando o jogador quiser)
+    function manualResupply() {
+        if (!gameActive) return;
+        playSound('resupply');
+        for (let i = 0; i < 5; i++) {
+            hand.push(Math.floor(Math.random() * 9) + 1);
+        }
+        renderHand();
+        const msg = document.getElementById('gameMsg');
+        msg.style.color = 'var(--primary)';
+        msg.innerText = "🔨 Forja reabastecida com 5 novas cartas!";
+    }
+
     function nextRound() {
         playSound('click');
         score++;
         document.getElementById('score').innerText = score;
         document.getElementById('victory-modal').style.display = 'none';
 
-        timeLeft = maxTime; // Restaura o tempo cheio
+        timeLeft = maxTime; // Restaura o tempo cheio do nível
         document.getElementById('timer').innerText = timeLeft;
 
-        startNewRound(true); // Gera novo alvo e 8 cartas novas
+        startNewRound(null); // Inicia novo desafio do zero com 8 cartas
         gameActive = true; // Retoma o cronômetro
     }
 
