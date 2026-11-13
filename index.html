@@ -108,17 +108,20 @@
         .menu-buttons {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            max-width: 350px;
+            gap: 12px;
+            max-width: 400px;
             margin: 0 auto;
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 5px;
         }
 
         .menu-btn {
             background: linear-gradient(135deg, #1e293b, #0f172a);
             color: white;
             border: 2px solid #f97316;
-            padding: 16px;
-            font-size: 1.2rem;
+            padding: 14px;
+            font-size: 1.1rem;
             font-weight: bold;
             border-radius: 12px;
             cursor: pointer;
@@ -228,7 +231,7 @@
             min-height: 115px;
         }
 
-        /* Slots com visual exato de cartas */
+        /* Slots estilizados */
         .slot-card {
             width: 75px;
             height: 105px;
@@ -248,6 +251,18 @@
         .slot-card.filled-blue {
             background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             border: 2px solid rgba(255,255,255,0.4);
+            color: #ffffff;
+        }
+
+        .slot-card.filled-red {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            border: 2px solid rgba(255,255,255,0.4);
+            color: #ffffff;
+        }
+
+        .slot-card.filled-black {
+            background: linear-gradient(135deg, #1f2937, #111827);
+            border: 2px solid #fbbf24;
             color: #ffffff;
         }
 
@@ -287,7 +302,6 @@
 
         .hand-container { margin-top: 20px; }
         
-        /* Barra de Ações Superior (Botão Isolado + 5 Cartas) */
         .top-action-bar {
             display: flex;
             justify-content: space-between;
@@ -307,10 +321,10 @@
             margin-top: 15px;
         }
 
+        /* Estilos de Cartas por Níveis */
         .card {
             width: 75px;
             height: 105px;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -324,15 +338,54 @@
             border: 2px solid rgba(255,255,255,0.2);
         }
 
-        .card:hover {
+        /* Níveis 1 a 4: Azul */
+        .card.theme-blue {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: #fff;
+        }
+        .card.theme-blue:hover {
             transform: translateY(-8px) scale(1.05);
             box-shadow: 0 10px 20px rgba(59, 130, 246, 0.5);
             border-color: #fff;
         }
-
-        .card.selected {
+        .card.theme-blue.selected {
             border: 3px solid #fbbf24;
             background: linear-gradient(135deg, #d97706, #b45309);
+            transform: translateY(-10px);
+            box-shadow: 0 0 20px #fbbf24;
+        }
+
+        /* Níveis 5 a 8: Vermelho */
+        .card.theme-red {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            color: #fff;
+        }
+        .card.theme-red:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.5);
+            border-color: #fff;
+        }
+        .card.theme-red.selected {
+            border: 3px solid #fbbf24;
+            background: linear-gradient(135deg, #d97706, #b45309);
+            transform: translateY(-10px);
+            box-shadow: 0 0 20px #fbbf24;
+        }
+
+        /* Níveis 9 a 12: Preto com detalhes dourados */
+        .card.theme-black {
+            background: linear-gradient(135deg, #1f2937, #111827);
+            color: #f8fafc;
+            border: 2px solid #4b5563;
+        }
+        .card.theme-black:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(251, 191, 36, 0.4);
+            border-color: #fbbf24;
+        }
+        .card.theme-black.selected {
+            border: 3px solid #fbbf24;
+            background: linear-gradient(135deg, #b45309, #78350f);
             transform: translateY(-10px);
             box-shadow: 0 0 20px #fbbf24;
         }
@@ -340,7 +393,7 @@
         @keyframes forgeFlash {
             0% { transform: scale(0.5); background: #ef4444; filter: brightness(2); }
             50% { transform: scale(1.25); background: #f97316; }
-            100% { transform: scale(1); background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+            100% { transform: scale(1); }
         }
 
         .card.newly-forged { animation: forgeFlash 0.6s ease-out; }
@@ -429,7 +482,7 @@
 </head>
 <body>
 
-<!-- Botão de Som no Canto Superior -->
+<!-- Botão de Som Global -->
 <button class="sound-toggle" id="soundToggleBtn" onclick="toggleSound()" title="Ligar/Desligar Som">🔊</button>
 
 <!-- Faíscas de fundo -->
@@ -448,33 +501,32 @@
 
 <div class="container">
 
-    <!-- TELA 1: MENU PRINCIPAL -->
+    <!-- TELA 1: MENU PRINCIPAL (Níveis 1 ao 12) -->
     <div id="menu-screen" class="screen active">
         <h1 class="game-title">🔥 Forjador de Números 🔥</h1>
-        <p class="game-subtitle">Domine o cálculo mental na forja matemática!</p>
+        <p class="game-subtitle">Escolha seu Nível na Jornada da Forja:</p>
         
-        <div class="menu-buttons">
-            <button class="menu-btn" onclick="selectLevel('easy')">Nível Fácil (120s)</button>
-            <button class="menu-btn" onclick="selectLevel('medium')">Nível Médio (90s)</button>
-            <button class="menu-btn" onclick="selectLevel('hard')">Nível Difícil (60s)</button>
+        <div class="menu-buttons" id="levelMenuContainer">
+            <!-- Gerado via JavaScript para os 12 níveis -->
         </div>
     </div>
 
     <!-- TELA 2: INSTRUÇÕES -->
     <div id="instructions-screen" class="screen">
-        <h1 class="game-title" style="font-size: 2rem;">Regras da Forja</h1>
+        <h1 class="game-title" style="font-size: 2rem;" id="instructionsTitle">Nível</h1>
         
         <div class="instructions-box">
-            <h3>Como Jogar:</h3>
+            <h3>Regras da Campanha:</h3>
             <ul>
-                <li><strong>A Regra de Ouro:</strong> Você começa com <strong>8 cartas</strong>. O objetivo é combiná-las na forja até sobrar <strong>apenas uma única carta</strong> no seu deck.</li>
-                <li><strong>A Meta Exata:</strong> Essa última carta restante precisa ser exatamente o <strong>Número Alvo</strong> inicial! Se você formar o alvo mas ainda houver outras cartas na mesa, o jogo continua.</li>
-                <li><strong>Botão + 5 Cartas na Mesa:</strong> Caso precise de mais opções durante a partida, clique neste botão isolado para puxar 5 cartas extras instantaneamente, sem alterar o tempo restante.</li>
+                <li><strong>A Regra de Ouro:</strong> Comece com <strong>8 cartas</strong> e combine-as até sobrar <strong>apenas uma única carta</strong> no deck.</li>
+                <li><strong>A Meta Exata:</strong> Essa última carta restante precisa ser exatamente o <strong>Número Alvo</strong> inicial!</li>
+                <li><strong>Progressão de Dificuldade:</strong> Níveis 1-4 (cartas azuis), Níveis 5-8 (cartas vermelhas e tempo decrescente), Níveis 9-12 (cartas pretas e desafio supremo).</li>
+                <li><strong>Botão + 5 Cartas na Mesa:</strong> Puxe 5 cartas extras a qualquer momento se precisar de opções, sem alterar o cronômetro.</li>
             </ul>
         </div>
 
         <div style="text-align: center;">
-            <button class="action-btn" onclick="startCountdown()" style="font-size: 1.3rem; padding: 16px 35px;">Começar a Jogar! 🔥</button>
+            <button class="action-btn" onclick="startCountdown()" style="font-size: 1.3rem; padding: 16px 35px;">Começar Nível! 🔥</button>
         </div>
     </div>
 
@@ -488,12 +540,12 @@
     <div id="game-screen" class="screen">
         <header>
             <div class="target-box">
-                <div style="font-size: 0.8rem; color: #94a3b8; letter-spacing: 1px;">NÚMERO ALVO</div>
+                <div style="font-size: 0.8rem; color: #94a3b8; letter-spacing: 1px;" id="headerLevelTitle">NÍVEL 1</div>
                 <div class="target-number" id="targetNum">--</div>
             </div>
             <div class="stats">
                 <div>⏱️ Tempo: <span id="timer">120</span>s</div>
-                <div>🏆 Alvos: <span id="score">0</span></div>
+                <div>🏆 Metas: <span id="score">0</span></div>
             </div>
         </header>
 
@@ -521,7 +573,6 @@
         </div>
 
         <div class="hand-container">
-            <!-- Barra isolada com o título da mão e o botão + 5 Cartas -->
             <div class="top-action-bar">
                 <h3 style="margin: 0; font-size: 1.1rem; color: #cbd5e1;">Sua Mão de Cartas</h3>
                 <button class="resupply-btn" onclick="manualResupply()">+ 5 Cartas na Mesa 🔨</button>
@@ -533,10 +584,10 @@
     <!-- TELA 5: GAME OVER -->
     <div id="gameover-screen" class="screen">
         <h2>🔥 Fogo Apagado! 🔥</h2>
-        <p style="font-size: 1.2rem; color: #cbd5e1;">A forja esfriou, mas você completou:</p>
+        <p style="font-size: 1.2rem; color: #cbd5e1;">A forja esfriou no nível <span id="gameOverLevel">1</span>.</p>
         <div style="font-size: 4rem; font-weight: bold; color: var(--accent); margin: 15px 0;" id="finalScore">0</div>
-        <p style="color: #94a3b8;">metas alcançadas nesta partida.</p>
-        <button class="action-btn" onclick="goToMenu()" style="margin-top: 20px;">Voltar ao Menu</button>
+        <p style="color: #94a3b8;">metas alcançadas nesta rodada.</p>
+        <button class="action-btn" onclick="goToMenu()" style="margin-top: 20px;">Voltar aos Níveis</button>
     </div>
 
 </div>
@@ -544,9 +595,9 @@
 <!-- MODAL DE VITÓRIA -->
 <div id="victory-modal">
     <div class="victory-content">
-        <h2 style="color: var(--accent); margin-top: 0; font-size: 2rem;">🔥 Alvo Forjado! 🔥</h2>
-        <p style="font-size: 1.1rem; color: #cbd5e1;">Você eliminou todas as cartas e a última sobrou exata na meta!</p>
-        <button class="action-btn" onclick="nextRound()" style="width: 100%; margin-top: 20px; font-size: 1.2rem; padding: 15px;">Próximo Alvo ➔</button>
+        <h2 style="color: var(--accent); margin-top: 0; font-size: 2rem;">🔥 Nível Concluído! 🔥</h2>
+        <p style="font-size: 1.1rem; color: #cbd5e1;" id="victoryMsg">Você eliminou todas as cartas e fechou a meta exata!</p>
+        <button class="action-btn" onclick="nextLevelOrRound()" id="victoryBtn" style="width: 100%; margin-top: 20px; font-size: 1.2rem; padding: 15px;">Próximo Nível ➔</button>
     </div>
 </div>
 
@@ -610,13 +661,36 @@
         }
     }
 
-    let currentLevel = 'medium';
-    let maxTime = 90;
+    // Gerador dinâmico dos botões do menu de 12 níveis
+    function buildLevelMenu() {
+        const container = document.getElementById('levelMenuContainer');
+        container.innerHTML = '';
+        for (let i = 1; i <= 12; i++) {
+            let baseT = getBaseTimeForLevel(i);
+            let desc = i <= 4 ? `Iniciante (${baseT}s)` : i <= 8 ? `Intenso - Cartas Vermelhas (${baseT}s - 10s/rodada)` : `Supremo - Cartas Pretas (${baseT}s - 20s/rodada)`;
+            const btn = document.createElement('button');
+            btn.className = 'menu-btn';
+            btn.innerHTML = `Nível ${i} <span style="font-size:0.85rem; color:#94a3b8; display:block;">${desc}</span>`;
+            btn.onclick = () => selectLevel(i);
+            container.appendChild(btn);
+        }
+    }
+    window.onload = buildLevelMenu;
+
+    function getBaseTimeForLevel(lvl) {
+        if (lvl <= 4) return 120;
+        if (lvl <= 8) return 90;
+        return 60;
+    }
+
+    let selectedLevel = 1;
+    let maxTime = 120;
     let target = 0;
     let hand = [];
-    let timeLeft = 90;
+    let timeLeft = 120;
     let timerInterval = null;
     let score = 0;
+    let roundInLevel = 0; // Conta quantas metas abateu no nível atual para diminuir o tempo se for >= 5
 
     let selected1 = null; 
     let selected2 = null; 
@@ -628,12 +702,13 @@
         document.getElementById(screenId).classList.add('active');
     }
 
-    function selectLevel(level) {
+    function selectLevel(lvl) {
         playSound('click');
-        currentLevel = level;
-        if (level === 'easy') maxTime = 120;
-        if (level === 'medium') maxTime = 90;
-        if (level === 'hard') maxTime = 60;
+        selectedLevel = lvl;
+        roundInLevel = 0;
+        maxTime = getBaseTimeForLevel(lvl);
+        
+        document.getElementById('instructionsTitle').innerText = `Nível ${lvl} da Forja`;
         showScreen('instructions-screen');
     }
 
@@ -659,9 +734,14 @@
     function startGame() {
         showScreen('game-screen');
         score = 0;
-        timeLeft = maxTime;
+        roundInLevel = 0;
+        
+        // Calcula o tempo inicial com base no nível e rodadas já passadas
+        calculateCurrentLevelTime();
+        
         document.getElementById('score').innerText = score;
         document.getElementById('timer').innerText = timeLeft;
+        document.getElementById('headerLevelTitle').innerText = `NÍVEL ${selectedLevel}`;
 
         startNewRound(null);
 
@@ -678,6 +758,20 @@
                 gameOver();
             }
         }, 1000);
+    }
+
+    function calculateCurrentLevelTime() {
+        let base = getBaseTimeForLevel(selectedLevel);
+        if (selectedLevel >= 5 && selectedLevel <= 8) {
+            // Níveis 5 a 8: reduz 10s a cada rodada concluída (mínimo 30s)
+            timeLeft = Math.max(30, base - (roundInLevel * 10));
+        } else if (selectedLevel >= 9) {
+            // Níveis 9 a 12: reduz 20s no total (ou 10s por rodada extra, mínimo 20s)
+            timeLeft = Math.max(20, base - (roundInLevel * 10));
+        } else {
+            timeLeft = base;
+        }
+        maxTime = timeLeft;
     }
 
     function startNewRound(keepCard = null) {
@@ -706,12 +800,20 @@
         updateSlots();
     }
 
+    function getCardThemeClass() {
+        if (selectedLevel >= 9) return 'theme-black';
+        if (selectedLevel >= 5) return 'theme-red';
+        return 'theme-blue';
+    }
+
     function renderHand(newlyForgedIndex = null) {
         const grid = document.getElementById('cardsGrid');
         grid.innerHTML = '';
+        let themeClass = getCardThemeClass();
+
         hand.forEach((num, index) => {
             const card = document.createElement('div');
-            card.className = `card ${selected1 === index || selected2 === index ? 'selected' : ''}`;
+            card.className = `card ${themeClass} ${selected1 === index || selected2 === index ? 'selected' : ''}`;
             if (index === newlyForgedIndex) {
                 card.classList.add('newly-forged');
             }
@@ -755,8 +857,12 @@
         const sOp = document.getElementById('slotOp');
         const s2 = document.getElementById('slot2');
 
+        let filledClass = 'filled-blue';
+        if (selectedLevel >= 9) filledClass = 'filled-black';
+        else if (selectedLevel >= 5) filledClass = 'filled-red';
+
         if (selected1 !== null) {
-            s1.className = 'slot-card filled-blue';
+            s1.className = `slot-card ${filledClass}`;
             s1.innerText = hand[selected1];
         } else {
             s1.className = 'slot-card';
@@ -772,7 +878,7 @@
         }
 
         if (selected2 !== null) {
-            s2.className = 'slot-card filled-blue';
+            s2.className = `slot-card ${filledClass}`;
             s2.innerText = hand[selected2];
         } else {
             s2.className = 'slot-card';
@@ -837,6 +943,16 @@
             if (hand[0] === target) {
                 gameActive = false; 
                 playSound('victory');
+                
+                // Configura mensagem do modal de vitória
+                if (selectedLevel < 12) {
+                    document.getElementById('victoryMsg').innerText = `Parabéns! Nível ${selectedLevel} concluído. Vamos para o Nível ${selectedLevel + 1}!`;
+                    document.getElementById('victoryBtn').innerText = `Avançar para Nível ${selectedLevel + 1} ➔`;
+                } else {
+                    document.getElementById('victoryMsg').innerText = `🏆 INCRÍVEL! Você completou o Nível 12 e zerou a Forja Suprema!`;
+                    document.getElementById('victoryBtn').innerText = `Jogar Novamente / Menu ➔`;
+                }
+
                 document.getElementById('victory-modal').style.display = 'flex';
                 return;
             } else {
@@ -867,14 +983,22 @@
         msg.innerText = "🔨 + 5 cartas adicionadas à mesa!";
     }
 
-    function nextRound() {
+    function nextLevelOrRound() {
         playSound('click');
         score++;
         document.getElementById('score').innerText = score;
         document.getElementById('victory-modal').style.display = 'none';
 
-        timeLeft = maxTime; 
+        if (selectedLevel < 12) {
+            selectedLevel++; // Avança automaticamente para o próximo nível da campanha!
+        } else {
+            selectedLevel = 1; // Se zerou o 12, recomeça do 1
+        }
+
+        roundInLevel++;
+        calculateCurrentLevelTime();
         document.getElementById('timer').innerText = timeLeft;
+        document.getElementById('headerLevelTitle').innerText = `NÍVEL ${selectedLevel}`;
 
         startNewRound(null); 
         gameActive = true; 
@@ -883,6 +1007,7 @@
     function gameOver() {
         playSound('click');
         showScreen('gameover-screen');
+        document.getElementById('gameOverLevel').innerText = selectedLevel;
         document.getElementById('finalScore').innerText = score;
     }
 
