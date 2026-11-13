@@ -286,6 +286,19 @@
         }
 
         .hand-container { margin-top: 20px; }
+        
+        /* Barra de Ações Superior (Botão Isolado + 5 Cartas) */
+        .top-action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 10px 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(249, 115, 22, 0.2);
+        }
+
         .cards-grid {
             display: flex;
             flex-wrap: wrap;
@@ -334,18 +347,16 @@
 
         .actions {
             display: flex;
-            gap: 15px;
             justify-content: center;
             margin-top: 20px;
-            flex-wrap: wrap;
         }
 
         button.action-btn {
             background: linear-gradient(135deg, #22c55e, #16a34a);
             color: white;
             border: none;
-            padding: 14px 28px;
-            font-size: 1.1rem;
+            padding: 14px 35px;
+            font-size: 1.2rem;
             font-weight: bold;
             border-radius: 10px;
             cursor: pointer;
@@ -361,9 +372,18 @@
         button.resupply-btn {
             background: linear-gradient(135deg, #f97316, #ea580c);
             box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+            padding: 10px 18px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
         button.resupply-btn:hover {
+            transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(249, 115, 22, 0.6);
         }
 
@@ -449,7 +469,7 @@
             <ul>
                 <li><strong>A Regra de Ouro:</strong> Você começa com <strong>8 cartas</strong>. O objetivo é combiná-las na forja até sobrar <strong>apenas uma única carta</strong> no seu deck.</li>
                 <li><strong>A Meta Exata:</strong> Essa última carta restante precisa ser exatamente o <strong>Número Alvo</strong> inicial! Se você formar o alvo mas ainda houver outras cartas na mesa, o jogo continua.</li>
-                <li><strong>Botão Reabastecer Forja:</strong> Caso precise de mais opções durante a partida, clique em "Reabastecer Forja" para ganhar 5 cartas extras instantaneamente, sem alterar o tempo restante.</li>
+                <li><strong>Botão + 5 Cartas na Mesa:</strong> Caso precise de mais opções durante a partida, clique neste botão isolado para puxar 5 cartas extras instantaneamente, sem alterar o tempo restante.</li>
             </ul>
         </div>
 
@@ -497,12 +517,15 @@
 
             <div class="actions">
                 <button class="action-btn" onclick="combineCards()">Forjar Cartas ⚡</button>
-                <button class="action-btn resupply-btn" onclick="manualResupply()">Reabastecer Forja 🔨</button>
             </div>
         </div>
 
         <div class="hand-container">
-            <h3 style="text-align: center; font-size: 1.1rem; color: #cbd5e1; margin-bottom: 5px;">Sua Mão de Cartas</h3>
+            <!-- Barra isolada com o título da mão e o botão + 5 Cartas -->
+            <div class="top-action-bar">
+                <h3 style="margin: 0; font-size: 1.1rem; color: #cbd5e1;">Sua Mão de Cartas</h3>
+                <button class="resupply-btn" onclick="manualResupply()">+ 5 Cartas na Mesa 🔨</button>
+            </div>
             <div class="cards-grid" id="cardsGrid"></div>
         </div>
     </div>
@@ -640,7 +663,7 @@
         document.getElementById('score').innerText = score;
         document.getElementById('timer').innerText = timeLeft;
 
-        startNewRound(null); // Inicia nova rodada limpa com 8 cartas
+        startNewRound(null);
 
         gameActive = true;
         clearInterval(timerInterval);
@@ -663,12 +686,12 @@
 
         hand = [];
         if (keepCard !== null) {
-            hand.push(keepCard); // Guarda a carta vencedora
-            for (let i = 0; i < 7; i++) { // + 7 novas cartas = 8 cartas no total
+            hand.push(keepCard); 
+            for (let i = 0; i < 7; i++) { 
                 hand.push(Math.floor(Math.random() * 9) + 1);
             }
         } else {
-            for (let i = 0; i < 8; i++) { // Deck inicial de 8 cartas
+            for (let i = 0; i < 8; i++) { 
                 hand.push(Math.floor(Math.random() * 9) + 1);
             }
         }
@@ -810,16 +833,15 @@
         renderHand(newIndex);
         updateSlots();
 
-        // VALIDAÇÃO RIGOROSA DA VITÓRIA: Só vence se restou APENAS 1 carta na mão E essa carta for o alvo exato!
         if (hand.length === 1) {
             if (hand[0] === target) {
-                gameActive = false; // Trava o cronômetro na vitória
+                gameActive = false; 
                 playSound('victory');
                 document.getElementById('victory-modal').style.display = 'flex';
                 return;
             } else {
                 msg.style.color = 'var(--danger)';
-                msg.innerText = "⚠️ Restou apenas 1 carta incorreta! Use o botão 'Reabastecer Forja' para puxar mais cartas.";
+                msg.innerText = "⚠️ Restou apenas 1 carta incorreta! Use o botão '+ 5 Cartas na Mesa' acima.";
                 return;
             }
         }
@@ -833,7 +855,6 @@
         }
     }
 
-    // Botão Manual de Reabastecimento (Adiciona 5 cartas quando o jogador quiser)
     function manualResupply() {
         if (!gameActive) return;
         playSound('resupply');
@@ -843,7 +864,7 @@
         renderHand();
         const msg = document.getElementById('gameMsg');
         msg.style.color = 'var(--primary)';
-        msg.innerText = "🔨 Forja reabastecida com 5 novas cartas!";
+        msg.innerText = "🔨 + 5 cartas adicionadas à mesa!";
     }
 
     function nextRound() {
@@ -852,11 +873,11 @@
         document.getElementById('score').innerText = score;
         document.getElementById('victory-modal').style.display = 'none';
 
-        timeLeft = maxTime; // Restaura o tempo cheio do nível
+        timeLeft = maxTime; 
         document.getElementById('timer').innerText = timeLeft;
 
-        startNewRound(null); // Inicia novo desafio do zero com 8 cartas
-        gameActive = true; // Retoma o cronômetro
+        startNewRound(null); 
+        gameActive = true; 
     }
 
     function gameOver() {
