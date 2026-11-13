@@ -108,20 +108,17 @@
         .menu-buttons {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            max-width: 400px;
+            gap: 15px;
+            max-width: 350px;
             margin: 0 auto;
-            max-height: 380px;
-            overflow-y: auto;
-            padding-right: 5px;
         }
 
         .menu-btn {
             background: linear-gradient(135deg, #1e293b, #0f172a);
             color: white;
             border: 2px solid #f97316;
-            padding: 14px;
-            font-size: 1.1rem;
+            padding: 16px;
+            font-size: 1.2rem;
             font-weight: bold;
             border-radius: 12px;
             cursor: pointer;
@@ -321,7 +318,7 @@
             margin-top: 15px;
         }
 
-        /* Estilos de Cartas por Níveis */
+        /* Estilos de Cartas por Fases */
         .card {
             width: 75px;
             height: 105px;
@@ -338,7 +335,7 @@
             border: 2px solid rgba(255,255,255,0.2);
         }
 
-        /* Níveis 1 a 4: Azul */
+        /* Fases 1 a 4: Azul */
         .card.theme-blue {
             background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             color: #fff;
@@ -355,7 +352,7 @@
             box-shadow: 0 0 20px #fbbf24;
         }
 
-        /* Níveis 5 a 8: Vermelho */
+        /* Fases 5 a 8: Vermelho */
         .card.theme-red {
             background: linear-gradient(135deg, #ef4444, #b91c1c);
             color: #fff;
@@ -372,7 +369,7 @@
             box-shadow: 0 0 20px #fbbf24;
         }
 
-        /* Níveis 9 a 12: Preto com detalhes dourados */
+        /* Fases 9 a 12: Preto com detalhes dourados */
         .card.theme-black {
             background: linear-gradient(135deg, #1f2937, #111827);
             color: #f8fafc;
@@ -501,32 +498,38 @@
 
 <div class="container">
 
-    <!-- TELA 1: MENU PRINCIPAL (Níveis 1 ao 12) -->
+    <!-- TELA 1: MENU PRINCIPAL (Dificuldades) -->
     <div id="menu-screen" class="screen active">
         <h1 class="game-title">🔥 Forjador de Números 🔥</h1>
-        <p class="game-subtitle">Escolha seu Nível na Jornada da Forja:</p>
+        <p class="game-subtitle">Escolha sua Dificuldade (12 Fases por modalidade):</p>
         
-        <div class="menu-buttons" id="levelMenuContainer">
-            <!-- Gerado via JavaScript para os 12 níveis -->
+        <div class="menu-buttons">
+            <button class="menu-btn" onclick="selectDifficulty('easy')">Nível Fácil (Base 120s)</button>
+            <button class="menu-btn" onclick="selectDifficulty('medium')">Nível Médio (Base 90s)</button>
+            <button class="menu-btn" onclick="selectDifficulty('hard')">Nível Difícil (Base 60s)</button>
         </div>
     </div>
 
     <!-- TELA 2: INSTRUÇÕES -->
     <div id="instructions-screen" class="screen">
-        <h1 class="game-title" style="font-size: 2rem;" id="instructionsTitle">Nível</h1>
+        <h1 class="game-title" style="font-size: 2rem;" id="instructionsTitle">Regras da Forja</h1>
         
         <div class="instructions-box">
-            <h3>Regras da Campanha:</h3>
+            <h3>Campanha de 12 Fases:</h3>
             <ul>
                 <li><strong>A Regra de Ouro:</strong> Comece com <strong>8 cartas</strong> e combine-as até sobrar <strong>apenas uma única carta</strong> no deck.</li>
                 <li><strong>A Meta Exata:</strong> Essa última carta restante precisa ser exatamente o <strong>Número Alvo</strong> inicial!</li>
-                <li><strong>Progressão de Dificuldade:</strong> Níveis 1-4 (cartas azuis), Níveis 5-8 (cartas vermelhas e tempo decrescente), Níveis 9-12 (cartas pretas e desafio supremo).</li>
-                <li><strong>Botão + 5 Cartas na Mesa:</strong> Puxe 5 cartas extras a qualquer momento se precisar de opções, sem alterar o cronômetro.</li>
+                <li><strong>Progressão de Fases e Cores:</strong> 
+                    <br>• Fases 1 a 4: Cartas Azuis (Tempo Base)
+                    <br>• Fases 5 a 8: Cartas Vermelhas (-10 segundos)
+                    <br>• Fases 9 a 12: Cartas Pretas/Douradas (-20 segundos)
+                </li>
+                <li><strong>Botão + 5 Cartas na Mesa:</strong> Puxe 5 cartas extras a qualquer momento se precisar de opções, sem alterar o tempo restante.</li>
             </ul>
         </div>
 
         <div style="text-align: center;">
-            <button class="action-btn" onclick="startCountdown()" style="font-size: 1.3rem; padding: 16px 35px;">Começar Nível! 🔥</button>
+            <button class="action-btn" onclick="startCountdown()" style="font-size: 1.3rem; padding: 16px 35px;">Começar Fase 1! 🔥</button>
         </div>
     </div>
 
@@ -540,12 +543,12 @@
     <div id="game-screen" class="screen">
         <header>
             <div class="target-box">
-                <div style="font-size: 0.8rem; color: #94a3b8; letter-spacing: 1px;" id="headerLevelTitle">NÍVEL 1</div>
+                <div style="font-size: 0.8rem; color: #94a3b8; letter-spacing: 1px;" id="headerPhaseTitle">FASE 1</div>
                 <div class="target-number" id="targetNum">--</div>
             </div>
             <div class="stats">
                 <div>⏱️ Tempo: <span id="timer">120</span>s</div>
-                <div>🏆 Metas: <span id="score">0</span></div>
+                <div>🏆 Fases Concluídas: <span id="score">0</span></div>
             </div>
         </header>
 
@@ -584,10 +587,10 @@
     <!-- TELA 5: GAME OVER -->
     <div id="gameover-screen" class="screen">
         <h2>🔥 Fogo Apagado! 🔥</h2>
-        <p style="font-size: 1.2rem; color: #cbd5e1;">A forja esfriou no nível <span id="gameOverLevel">1</span>.</p>
+        <p style="font-size: 1.2rem; color: #cbd5e1;">A forja esfriou na <span id="gameOverPhase">Fase 1</span>.</p>
         <div style="font-size: 4rem; font-weight: bold; color: var(--accent); margin: 15px 0;" id="finalScore">0</div>
-        <p style="color: #94a3b8;">metas alcançadas nesta rodada.</p>
-        <button class="action-btn" onclick="goToMenu()" style="margin-top: 20px;">Voltar aos Níveis</button>
+        <p style="color: #94a3b8;">fases concluídas nesta partida.</p>
+        <button class="action-btn" onclick="goToMenu()" style="margin-top: 20px;">Voltar ao Menu</button>
     </div>
 
 </div>
@@ -595,9 +598,9 @@
 <!-- MODAL DE VITÓRIA -->
 <div id="victory-modal">
     <div class="victory-content">
-        <h2 style="color: var(--accent); margin-top: 0; font-size: 2rem;">🔥 Nível Concluído! 🔥</h2>
+        <h2 style="color: var(--accent); margin-top: 0; font-size: 2rem;">🔥 Fase Concluída! 🔥</h2>
         <p style="font-size: 1.1rem; color: #cbd5e1;" id="victoryMsg">Você eliminou todas as cartas e fechou a meta exata!</p>
-        <button class="action-btn" onclick="nextLevelOrRound()" id="victoryBtn" style="width: 100%; margin-top: 20px; font-size: 1.2rem; padding: 15px;">Próximo Nível ➔</button>
+        <button class="action-btn" onclick="nextPhase()" id="victoryBtn" style="width: 100%; margin-top: 20px; font-size: 1.2rem; padding: 15px;">Próxima Fase ➔</button>
     </div>
 </div>
 
@@ -661,36 +664,15 @@
         }
     }
 
-    // Gerador dinâmico dos botões do menu de 12 níveis
-    function buildLevelMenu() {
-        const container = document.getElementById('levelMenuContainer');
-        container.innerHTML = '';
-        for (let i = 1; i <= 12; i++) {
-            let baseT = getBaseTimeForLevel(i);
-            let desc = i <= 4 ? `Iniciante (${baseT}s)` : i <= 8 ? `Intenso - Cartas Vermelhas (${baseT}s - 10s/rodada)` : `Supremo - Cartas Pretas (${baseT}s - 20s/rodada)`;
-            const btn = document.createElement('button');
-            btn.className = 'menu-btn';
-            btn.innerHTML = `Nível ${i} <span style="font-size:0.85rem; color:#94a3b8; display:block;">${desc}</span>`;
-            btn.onclick = () => selectLevel(i);
-            container.appendChild(btn);
-        }
-    }
-    window.onload = buildLevelMenu;
-
-    function getBaseTimeForLevel(lvl) {
-        if (lvl <= 4) return 120;
-        if (lvl <= 8) return 90;
-        return 60;
-    }
-
-    let selectedLevel = 1;
-    let maxTime = 120;
+    let currentDifficulty = 'medium'; // 'easy', 'medium', 'hard'
+    let currentPhase = 1; // de 1 a 12
+    let baseTime = 90;
+    let maxTime = 90;
     let target = 0;
     let hand = [];
-    let timeLeft = 120;
+    let timeLeft = 90;
     let timerInterval = null;
     let score = 0;
-    let roundInLevel = 0; // Conta quantas metas abateu no nível atual para diminuir o tempo se for >= 5
 
     let selected1 = null; 
     let selected2 = null; 
@@ -702,13 +684,16 @@
         document.getElementById(screenId).classList.add('active');
     }
 
-    function selectLevel(lvl) {
+    function selectDifficulty(diff) {
         playSound('click');
-        selectedLevel = lvl;
-        roundInLevel = 0;
-        maxTime = getBaseTimeForLevel(lvl);
+        currentDifficulty = diff;
+        currentPhase = 1; // Começa sempre na Fase 1
         
-        document.getElementById('instructionsTitle').innerText = `Nível ${lvl} da Forja`;
+        if (diff === 'easy') baseTime = 120;
+        if (diff === 'medium') baseTime = 90;
+        if (diff === 'hard') baseTime = 60;
+
+        document.getElementById('instructionsTitle').innerText = `Modo ${diff.toUpperCase()} - Fase 1`;
         showScreen('instructions-screen');
     }
 
@@ -734,14 +719,13 @@
     function startGame() {
         showScreen('game-screen');
         score = 0;
-        roundInLevel = 0;
+        currentPhase = 1;
         
-        // Calcula o tempo inicial com base no nível e rodadas já passadas
-        calculateCurrentLevelTime();
+        calculatePhaseTime();
         
         document.getElementById('score').innerText = score;
         document.getElementById('timer').innerText = timeLeft;
-        document.getElementById('headerLevelTitle').innerText = `NÍVEL ${selectedLevel}`;
+        document.getElementById('headerPhaseTitle').innerText = `FASE ${currentPhase} (${currentDifficulty.toUpperCase()})`;
 
         startNewRound(null);
 
@@ -760,16 +744,16 @@
         }, 1000);
     }
 
-    function calculateCurrentLevelTime() {
-        let base = getBaseTimeForLevel(selectedLevel);
-        if (selectedLevel >= 5 && selectedLevel <= 8) {
-            // Níveis 5 a 8: reduz 10s a cada rodada concluída (mínimo 30s)
-            timeLeft = Math.max(30, base - (roundInLevel * 10));
-        } else if (selectedLevel >= 9) {
-            // Níveis 9 a 12: reduz 20s no total (ou 10s por rodada extra, mínimo 20s)
-            timeLeft = Math.max(20, base - (roundInLevel * 10));
+    function calculatePhaseTime() {
+        // Fases 1-4: Tempo base
+        // Fases 5-8: Base - 10s
+        // Fases 9-12: Base - 20s (mínimo 20s)
+        if (currentPhase >= 9) {
+            timeLeft = Math.max(20, baseTime - 20);
+        } else if (currentPhase >= 5) {
+            timeLeft = Math.max(25, baseTime - 10);
         } else {
-            timeLeft = base;
+            timeLeft = baseTime;
         }
         maxTime = timeLeft;
     }
@@ -801,9 +785,9 @@
     }
 
     function getCardThemeClass() {
-        if (selectedLevel >= 9) return 'theme-black';
-        if (selectedLevel >= 5) return 'theme-red';
-        return 'theme-blue';
+        if (currentPhase >= 9) return 'theme-black'; // Fases 9 a 12: Pretpre / Dourado
+        if (currentPhase >= 5) return 'theme-red';   // Fases 5 a 8: Vermelho
+        return 'theme-blue';                         // Fases 1 a 4: Azul
     }
 
     function renderHand(newlyForgedIndex = null) {
@@ -858,8 +842,8 @@
         const s2 = document.getElementById('slot2');
 
         let filledClass = 'filled-blue';
-        if (selectedLevel >= 9) filledClass = 'filled-black';
-        else if (selectedLevel >= 5) filledClass = 'filled-red';
+        if (currentPhase >= 9) filledClass = 'filled-black';
+        else if (currentPhase >= 5) filledClass = 'filled-red';
 
         if (selected1 !== null) {
             s1.className = `slot-card ${filledClass}`;
@@ -944,12 +928,11 @@
                 gameActive = false; 
                 playSound('victory');
                 
-                // Configura mensagem do modal de vitória
-                if (selectedLevel < 12) {
-                    document.getElementById('victoryMsg').innerText = `Parabéns! Nível ${selectedLevel} concluído. Vamos para o Nível ${selectedLevel + 1}!`;
-                    document.getElementById('victoryBtn').innerText = `Avançar para Nível ${selectedLevel + 1} ➔`;
+                if (currentPhase < 12) {
+                    document.getElementById('victoryMsg').innerText = `Parabéns! Fase ${currentPhase} concluída. Vamos para a Fase ${currentPhase + 1}!`;
+                    document.getElementById('victoryBtn').innerText = `Avançar para Fase ${currentPhase + 1} ➔`;
                 } else {
-                    document.getElementById('victoryMsg').innerText = `🏆 INCRÍVEL! Você completou o Nível 12 e zerou a Forja Suprema!`;
+                    document.getElementById('victoryMsg').innerText = `🏆 LENDÁRIO! Você zerou todas as 12 Fases da Forja Suprema!`;
                     document.getElementById('victoryBtn').innerText = `Jogar Novamente / Menu ➔`;
                 }
 
@@ -983,22 +966,21 @@
         msg.innerText = "🔨 + 5 cartas adicionadas à mesa!";
     }
 
-    function nextLevelOrRound() {
+    function nextPhase() {
         playSound('click');
         score++;
         document.getElementById('score').innerText = score;
         document.getElementById('victory-modal').style.display = 'none';
 
-        if (selectedLevel < 12) {
-            selectedLevel++; // Avança automaticamente para o próximo nível da campanha!
+        if (currentPhase < 12) {
+            currentPhase++; // Avança para a próxima fase (até 12)
         } else {
-            selectedLevel = 1; // Se zerou o 12, recomeça do 1
+            currentPhase = 1; // Se zerou a 12, recomeça da 1
         }
 
-        roundInLevel++;
-        calculateCurrentLevelTime();
+        calculatePhaseTime();
         document.getElementById('timer').innerText = timeLeft;
-        document.getElementById('headerLevelTitle').innerText = `NÍVEL ${selectedLevel}`;
+        document.getElementById('headerPhaseTitle').innerText = `FASE ${currentPhase} (${currentDifficulty.toUpperCase()})`;
 
         startNewRound(null); 
         gameActive = true; 
@@ -1007,7 +989,7 @@
     function gameOver() {
         playSound('click');
         showScreen('gameover-screen');
-        document.getElementById('gameOverLevel').innerText = selectedLevel;
+        document.getElementById('gameOverPhase').innerText = `Fase ${currentPhase}`;
         document.getElementById('finalScore').innerText = score;
     }
 
