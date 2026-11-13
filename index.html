@@ -188,7 +188,7 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             text-align: right;
         }
 
@@ -516,7 +516,7 @@
             <ul>
                 <li><strong>A Regra de Ouro:</strong> Comece com <strong>8 cartas</strong> e combine-as até sobrar <strong>apenas uma única carta</strong> no deck.</li>
                 <li><strong>A Meta Exata:</strong> Essa última carta restante precisa ser exatamente o <strong>Número Alvo</strong> inicial!</li>
-                <li><strong>Evolução da Forja:</strong> Supere os desafios consecutivos para avançar pelas etapas e desbloquear novos visuais e intensidades de calor.</li>
+                <li><strong>Sistema de Pontuação:</strong> Ganhe 100 pontos base por fase + bônus de velocidade proporcional ao tempo que sobrar no cronômetro. Quanto mais rápido, maior a pontuação acumulada!</li>
                 <li><strong>Botão + 5 Cartas na Mesa:</strong> Puxe 5 cartas extras a qualquer momento se precisar de opções, sem alterar o tempo restante.</li>
             </ul>
         </div>
@@ -541,7 +541,7 @@
             </div>
             <div class="stats">
                 <div>⏱️ Tempo: <span id="timer">120</span>s</div>
-                <div>🏆 Fases Concluídas: <span id="score">0</span></div>
+                <div>🏆 Pontuação: <span id="score">0</span> pts</div>
             </div>
         </header>
 
@@ -580,9 +580,9 @@
     <!-- TELA 5: GAME OVER -->
     <div id="gameover-screen" class="screen">
         <h2>🔥 Fogo Apagado! 🔥</h2>
-        <p style="font-size: 1.2rem; color: #cbd5e1;">A forja esfriou na <span id="gameOverPhase">Fase 1</span>.</p>
+        <p style="font-size: 1.2rem; color: #cbd5e1;">A forja esfriou na Fase <span id="gameOverPhase">1</span>.</p>
         <div style="font-size: 4rem; font-weight: bold; color: var(--accent); margin: 15px 0;" id="finalScore">0</div>
-        <p style="color: #94a3b8;">fases concluídas nesta partida.</p>
+        <p style="color: #94a3b8;">pontos acumulados nesta partida.</p>
         <button class="action-btn" onclick="goToMenu()" style="margin-top: 20px;">Voltar ao Menu</button>
     </div>
 
@@ -665,13 +665,13 @@
     let hand = [];
     let timeLeft = 90;
     let timerInterval = null;
-    let score = 0;
+    let totalScore = 0; // Pontuação acumulada total
 
     let selected1 = null; 
     let selected2 = null; 
     let selectedOp = null;
     let gameActive = false;
-    let gameBeaten = false; // Flag para controlar se zerou o jogo
+    let gameBeaten = false; 
 
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -683,6 +683,7 @@
         currentDifficulty = diff;
         currentPhase = 1; 
         gameBeaten = false;
+        totalScore = 0;
         
         if (diff === 'easy') baseTime = 120;
         if (diff === 'medium') baseTime = 90;
@@ -713,13 +714,13 @@
 
     function startGame() {
         showScreen('game-screen');
-        score = 0;
+        totalScore = 0;
         currentPhase = 1;
         gameBeaten = false;
         
         calculatePhaseTime();
         
-        document.getElementById('score').innerText = score;
+        document.getElementById('score').innerText = totalScore;
         document.getElementById('timer').innerText = timeLeft;
 
         startNewRound(null);
@@ -777,9 +778,9 @@
     }
 
     function getCardThemeClass() {
-        if (currentPhase >= 9) return 'theme-black'; // Fases 9 a 12: Preto / Dourado
-        if (currentPhase >= 5) return 'theme-red';   // Fases 5 a 8: Vermelho
-        return 'theme-blue';                         // Fases 1 a 4: Azul
+        if (currentPhase >= 9) return 'theme-black'; 
+        if (currentPhase >= 5) return 'theme-red';   
+        return 'theme-blue';                         
     }
 
     function renderHand(newlyForgedIndex = null) {
@@ -919,16 +920,21 @@
             if (hand[0] === target) {
                 gameActive = false; 
                 playSound('victory');
+
+                // Cálculo da Pontuação: 100 pontos base + bônus proporcional ao tempo restante
+                let speedBonus = Math.floor((timeLeft / maxTime) * 100);
+                let phaseScore = 100 + speedBonus;
+                totalScore += phaseScore;
+                document.getElementById('score').innerText = totalScore;
                 
                 if (currentPhase < 12) {
                     document.getElementById('victoryTitle').innerText = "🔥 Fase Concluída! 🔥";
-                    document.getElementById('victoryMsg').innerText = `Parabéns! Fase ${currentPhase} concluída. Vamos para a Fase ${currentPhase + 1}!`;
+                    document.getElementById('victoryMsg').innerText = `Parabéns! Fase ${currentPhase} concluída (+${phaseScore} pts). Vamos para a Fase ${currentPhase + 1}!`;
                     document.getElementById('victoryBtn').innerText = `Próxima Fase ➔`;
                     gameBeaten = false;
                 } else {
-                    // ZEROU O JOGO (Fase 12 concluída)
                     document.getElementById('victoryTitle').innerText = "👑 FORJADOR MESTRE! 👑";
-                    document.getElementById('victoryMsg').innerText = `Parabéns! Você venceu o jogo e é o Forjador Mestre de Números! Forja suprema dominada com sucesso!`;
+                    document.getElementById('victoryMsg').innerText = `Parabéns! Você venceu o jogo e é o Forjador Mestre de Números! Pontuação Total: ${totalScore} pts.`;
                     document.getElementById('victoryBtn').innerText = `Voltar ao Menu do Jogo ➔`;
                     gameBeaten = true;
                 }
@@ -965,12 +971,9 @@
 
     function nextPhase() {
         playSound('click');
-        score++;
-        document.getElementById('score').innerText = score;
         document.getElementById('victory-modal').style.display = 'none';
 
         if (gameBeaten) {
-            // Se já zerou o jogo, volta para o menu principal
             goToMenu();
             return;
         }
@@ -989,8 +992,8 @@
     function gameOver() {
         playSound('click');
         showScreen('gameover-screen');
-        document.getElementById('gameOverPhase').innerText = `Fase ${currentPhase}`;
-        document.getElementById('finalScore').innerText = score;
+        document.getElementById('gameOverPhase').innerText = currentPhase;
+        document.getElementById('finalScore').innerText = totalScore;
     }
 
     function goToMenu() {
