@@ -335,7 +335,6 @@
             border: 2px solid rgba(255,255,255,0.2);
         }
 
-        /* Fases 1 a 4: Azul */
         .card.theme-blue {
             background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             color: #fff;
@@ -352,7 +351,6 @@
             box-shadow: 0 0 20px #fbbf24;
         }
 
-        /* Fases 5 a 8: Vermelho */
         .card.theme-red {
             background: linear-gradient(135deg, #ef4444, #b91c1c);
             color: #fff;
@@ -369,7 +367,6 @@
             box-shadow: 0 0 20px #fbbf24;
         }
 
-        /* Fases 9 a 12: Preto com detalhes dourados */
         .card.theme-black {
             background: linear-gradient(135deg, #1f2937, #111827);
             color: #f8fafc;
@@ -501,12 +498,12 @@
     <!-- TELA 1: MENU PRINCIPAL (Dificuldades) -->
     <div id="menu-screen" class="screen active">
         <h1 class="game-title">🔥 Forjador de Números 🔥</h1>
-        <p class="game-subtitle">Escolha sua Dificuldade (12 Fases por modalidade):</p>
+        <p class="game-subtitle">Escolha sua Dificuldade:</p>
         
         <div class="menu-buttons">
-            <button class="menu-btn" onclick="selectDifficulty('easy')">Nível Fácil (Base 120s)</button>
-            <button class="menu-btn" onclick="selectDifficulty('medium')">Nível Médio (Base 90s)</button>
-            <button class="menu-btn" onclick="selectDifficulty('hard')">Nível Difícil (Base 60s)</button>
+            <button class="menu-btn" onclick="selectDifficulty('easy')">Nível Fácil</button>
+            <button class="menu-btn" onclick="selectDifficulty('medium')">Nível Médio</button>
+            <button class="menu-btn" onclick="selectDifficulty('hard')">Nível Difícil</button>
         </div>
     </div>
 
@@ -515,15 +512,11 @@
         <h1 class="game-title" style="font-size: 2rem;" id="instructionsTitle">Regras da Forja</h1>
         
         <div class="instructions-box">
-            <h3>Campanha de 12 Fases:</h3>
+            <h3>Como Jogar:</h3>
             <ul>
                 <li><strong>A Regra de Ouro:</strong> Comece com <strong>8 cartas</strong> e combine-as até sobrar <strong>apenas uma única carta</strong> no deck.</li>
                 <li><strong>A Meta Exata:</strong> Essa última carta restante precisa ser exatamente o <strong>Número Alvo</strong> inicial!</li>
-                <li><strong>Progressão de Fases e Cores:</strong> 
-                    <br>• Fases 1 a 4: Cartas Azuis (Tempo Base)
-                    <br>• Fases 5 a 8: Cartas Vermelhas (-10 segundos)
-                    <br>• Fases 9 a 12: Cartas Pretas/Douradas (-20 segundos)
-                </li>
+                <li><strong>Evolução da Forja:</strong> Supere os desafios consecutivos para avançar pelas etapas e desbloquear novos visuais e intensidades de calor.</li>
                 <li><strong>Botão + 5 Cartas na Mesa:</strong> Puxe 5 cartas extras a qualquer momento se precisar de opções, sem alterar o tempo restante.</li>
             </ul>
         </div>
@@ -543,7 +536,7 @@
     <div id="game-screen" class="screen">
         <header>
             <div class="target-box">
-                <div style="font-size: 0.8rem; color: #94a3b8; letter-spacing: 1px;" id="headerPhaseTitle">FASE 1</div>
+                <div style="font-size: 0.8rem; color: #94a3b8; letter-spacing: 1px;">ALVO</div>
                 <div class="target-number" id="targetNum">--</div>
             </div>
             <div class="stats">
@@ -595,10 +588,10 @@
 
 </div>
 
-<!-- MODAL DE VITÓRIA -->
+<!-- MODAL DE VITÓRIA / ZERAMENTO -->
 <div id="victory-modal">
     <div class="victory-content">
-        <h2 style="color: var(--accent); margin-top: 0; font-size: 2rem;">🔥 Fase Concluída! 🔥</h2>
+        <h2 style="color: var(--accent); margin-top: 0; font-size: 2rem;" id="victoryTitle">🔥 Fase Concluída! 🔥</h2>
         <p style="font-size: 1.1rem; color: #cbd5e1;" id="victoryMsg">Você eliminou todas as cartas e fechou a meta exata!</p>
         <button class="action-btn" onclick="nextPhase()" id="victoryBtn" style="width: 100%; margin-top: 20px; font-size: 1.2rem; padding: 15px;">Próxima Fase ➔</button>
     </div>
@@ -664,8 +657,8 @@
         }
     }
 
-    let currentDifficulty = 'medium'; // 'easy', 'medium', 'hard'
-    let currentPhase = 1; // de 1 a 12
+    let currentDifficulty = 'medium'; 
+    let currentPhase = 1; 
     let baseTime = 90;
     let maxTime = 90;
     let target = 0;
@@ -678,6 +671,7 @@
     let selected2 = null; 
     let selectedOp = null;
     let gameActive = false;
+    let gameBeaten = false; // Flag para controlar se zerou o jogo
 
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -687,13 +681,14 @@
     function selectDifficulty(diff) {
         playSound('click');
         currentDifficulty = diff;
-        currentPhase = 1; // Começa sempre na Fase 1
+        currentPhase = 1; 
+        gameBeaten = false;
         
         if (diff === 'easy') baseTime = 120;
         if (diff === 'medium') baseTime = 90;
         if (diff === 'hard') baseTime = 60;
 
-        document.getElementById('instructionsTitle').innerText = `Modo ${diff.toUpperCase()} - Fase 1`;
+        document.getElementById('instructionsTitle').innerText = `Modo ${diff.toUpperCase()} - Regras da Forja`;
         showScreen('instructions-screen');
     }
 
@@ -720,12 +715,12 @@
         showScreen('game-screen');
         score = 0;
         currentPhase = 1;
+        gameBeaten = false;
         
         calculatePhaseTime();
         
         document.getElementById('score').innerText = score;
         document.getElementById('timer').innerText = timeLeft;
-        document.getElementById('headerPhaseTitle').innerText = `FASE ${currentPhase} (${currentDifficulty.toUpperCase()})`;
 
         startNewRound(null);
 
@@ -745,9 +740,6 @@
     }
 
     function calculatePhaseTime() {
-        // Fases 1-4: Tempo base
-        // Fases 5-8: Base - 10s
-        // Fases 9-12: Base - 20s (mínimo 20s)
         if (currentPhase >= 9) {
             timeLeft = Math.max(20, baseTime - 20);
         } else if (currentPhase >= 5) {
@@ -785,7 +777,7 @@
     }
 
     function getCardThemeClass() {
-        if (currentPhase >= 9) return 'theme-black'; // Fases 9 a 12: Pretpre / Dourado
+        if (currentPhase >= 9) return 'theme-black'; // Fases 9 a 12: Preto / Dourado
         if (currentPhase >= 5) return 'theme-red';   // Fases 5 a 8: Vermelho
         return 'theme-blue';                         // Fases 1 a 4: Azul
     }
@@ -929,11 +921,16 @@
                 playSound('victory');
                 
                 if (currentPhase < 12) {
+                    document.getElementById('victoryTitle').innerText = "🔥 Fase Concluída! 🔥";
                     document.getElementById('victoryMsg').innerText = `Parabéns! Fase ${currentPhase} concluída. Vamos para a Fase ${currentPhase + 1}!`;
-                    document.getElementById('victoryBtn').innerText = `Avançar para Fase ${currentPhase + 1} ➔`;
+                    document.getElementById('victoryBtn').innerText = `Próxima Fase ➔`;
+                    gameBeaten = false;
                 } else {
-                    document.getElementById('victoryMsg').innerText = `🏆 LENDÁRIO! Você zerou todas as 12 Fases da Forja Suprema!`;
-                    document.getElementById('victoryBtn').innerText = `Jogar Novamente / Menu ➔`;
+                    // ZEROU O JOGO (Fase 12 concluída)
+                    document.getElementById('victoryTitle').innerText = "👑 FORJADOR MESTRE! 👑";
+                    document.getElementById('victoryMsg').innerText = `Parabéns! Você venceu o jogo e é o Forjador Mestre de Números! Forja suprema dominada com sucesso!`;
+                    document.getElementById('victoryBtn').innerText = `Voltar ao Menu do Jogo ➔`;
+                    gameBeaten = true;
                 }
 
                 document.getElementById('victory-modal').style.display = 'flex';
@@ -972,15 +969,18 @@
         document.getElementById('score').innerText = score;
         document.getElementById('victory-modal').style.display = 'none';
 
+        if (gameBeaten) {
+            // Se já zerou o jogo, volta para o menu principal
+            goToMenu();
+            return;
+        }
+
         if (currentPhase < 12) {
-            currentPhase++; // Avança para a próxima fase (até 12)
-        } else {
-            currentPhase = 1; // Se zerou a 12, recomeça da 1
+            currentPhase++; 
         }
 
         calculatePhaseTime();
         document.getElementById('timer').innerText = timeLeft;
-        document.getElementById('headerPhaseTitle').innerText = `FASE ${currentPhase} (${currentDifficulty.toUpperCase()})`;
 
         startNewRound(null); 
         gameActive = true; 
